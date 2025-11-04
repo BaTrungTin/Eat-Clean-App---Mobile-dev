@@ -1,221 +1,221 @@
 package com.team.eatcleanapp.ui.screens.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
-import androidx.compose.ui.layout.ContentScale
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.team.eatcleanapp.R
 
 
-private object ProfileTokens {
-    val BgLight     = Color(0xFF225416).copy(0.2f)// nền
-    val CardGreen   = Color(0xFF046E1F).copy(0.5f) // thẻ
-    val TitleGreen  = Color(0xFF1F6E43)// tiêu đề
-
-    val TitleBlack   = Color(color = 0xFF000000) // màu đen cho tên
-    val ValueRed    = Color(0xFFC11F1F) // màu value
-
-
-    val Radius      = 16.dp
-    val HPad        = 16.dp
-    val VPad        = 20.dp
-    val InnerPad    = 16.dp
-    val Gap         = 12.dp
-    val CardHeight  = 152.dp
-}
-
-// top bar
 @Composable
-private fun ProfileTopBar(
-    userName: String,
-    modifier: Modifier = Modifier
-) {
-    val t = ProfileTokens
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // text avatar
-        Text(
-            text = userName,
-            color = t.TitleBlack,
-            fontSize = 30.sp,
+// trang topbar contrainlayout
+fun TopBar(
+    modifier: Modifier= Modifier
+
+){
+    ConstraintLayout {
+        val (tvName,imgName,tvBMI)=createRefs()
+
+        Text(text = "Nguyễn Hồng Đông ", style = TextStyle(
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f)
+            fontSize = 25.sp,
+            color = Color(0xFF000000)
+        ),
+            modifier= Modifier.constrainAs(tvName){
+                top.linkTo(parent.top, margin = 16.dp)
+                start.linkTo(parent.start, margin = 20.dp)
+
+            }
         )
-        // Avatar
         Image(
-            painterResource(R.drawable.avatar), contentDescription = null
-            , contentScale = ContentScale.Fit,
+            painter = painterResource(R.drawable.avatar),
+            contentDescription = "avartar",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(40.dp)
+                .constrainAs(imgName){
+                    top.linkTo(parent.top, margin = 12.dp)
+                    start.linkTo(tvName.end, margin = 16.dp)
+                }
+
+
+        )
+        Text(text = "Chỉ số cơ thể (BMI)", style = TextStyle(
+            fontWeight = FontWeight.SemiBold
+
+        ),
+            modifier= Modifier.constrainAs(tvBMI){
+                top.linkTo(tvName.bottom, margin = 20.dp)
+                start.linkTo(tvName.start)
+
+            }
         )
 
+
+
     }
 }
 
-
 @Composable
-private fun MetricCard(
-    title: String,
-    valueText: String,
-    dateText: String,
+fun BodyBMI(
+    name:String,
+    dateTime:String,
+    value: Double,
+    unit:String?,
+
+
+
+
     modifier: Modifier = Modifier
-) {
-    val t = ProfileTokens
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(t.Radius),
-        color = t.CardGreen,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
-    ) {
-        Column(
+){
+
+
+    val Green = Color(color = 0xFF046E1F).copy(0.5f)
+    val Black= Color(color = 0xFF000000)
+    val Red = Color(color=0xFFC11F1F)
+
+
+    ConstraintLayout(
+        modifier=modifier
+            .fillMaxWidth()
+            .padding(horizontal=16.dp)
+            .background(color = Green, shape = RoundedCornerShape(15))
+            .height(152.dp)
+
+    )
+
+    {
+
+        val verticalGuideLine25 = createGuidelineFromStart(0.25f)
+        val (textNameRef,iconRef, textDateTimeRef, textValueRef) = createRefs()
+
+        Text(
+            text = name,
+            color = Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 25.sp,
+            modifier = Modifier.constrainAs(textNameRef) {
+                top.linkTo(parent.top, margin = 36.dp)
+                start.linkTo(parent.start, margin = 20.dp)
+
+            }
+        )
+        Icon(
+            imageVector = Icons.Default.Schedule,
+            contentDescription = null,
+            tint=Black , // dùng để tô màu cho Icon
             modifier = Modifier
-                .fillMaxSize()
-                .padding(t.InnerPad),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    color = t.TitleBlack,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.AccessTime,
-                        contentDescription = null,
-                        tint = t.TitleBlack
-                    )
-                    Spacer(Modifier.size(6.dp))
-                    Text(
-                        text = dateText,
-                        color = t.TitleBlack,
-                        fontSize = 16.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                .size(20.dp)
+                .constrainAs(iconRef){
+                    top.linkTo(parent.top, margin = 45.dp)
+                    start.linkTo(textNameRef.end , margin = 15.dp)
+
                 }
+
+        )
+
+        Text(
+            text = dateTime,
+            color = Black,
+            fontSize = 20.sp,
+            modifier= Modifier.constrainAs(textDateTimeRef){
+                top.linkTo(iconRef.top)
+                start.linkTo(iconRef.end, margin = 5.dp)
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = valueText,
-                color = t.ValueRed,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        )
+        Text(
+            text = "${value}${unit ?: ""}",
+            color = Red,
+            fontWeight = FontWeight.Bold,
+            fontSize = 25.sp,
+            modifier= Modifier
+                .constrainAs(textValueRef){
+                    top.linkTo(textNameRef.bottom, margin = 15.dp)
+                    start.linkTo(textNameRef.start)
+
+                }
+        )
+
+
+
     }
+
 }
-
-
 @Composable
-fun BodyMetricsScreen(
-    userName: String = "Nguyễn Hồng Đông",
-    dateText: String = "14 tháng 8 · 11:00",
-) {
-    val t = ProfileTokens
-
-    Surface(
-        color = t.BgLight,
-        modifier = Modifier.fillMaxSize()
-    ) {
-
-        Column(
+fun ScreenProfile(){
+    Column (modifier = Modifier.padding(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)){
+        BodyBMI(
+            name="BMI",
+            dateTime="14 tháng 8 -11:00",
+            value=18.5,
+            unit=null,
             modifier = Modifier
-                .fillMaxSize()
-                .background(t.BgLight)
-                .padding(
-                    top = 75.dp,
-                    bottom = 82.dp,
-                    start = t.HPad,
-                    end = t.HPad
-                ),
-        ) {
-            // 1. Top Bar (đã chỉnh sửa)
-            ProfileTopBar(
-                userName = userName,
-            )
 
-           Spacer(modifier = Modifier.height(25.dp))
-            Text(
-                text = "Chỉ số cơ thể (BMI)",
-                color = t.TitleBlack.copy(alpha = 0.85f),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .padding(start = 5.dp, bottom = 8.dp)
-            )
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        BodyBMI(
+            name="Chiều cao",
+            dateTime="14 tháng 8 -11:00",
+            value=180.0,
+            unit="cm",
+            modifier = Modifier
+
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        BodyBMI(
+            name="Cân nặng",
+            dateTime="14 tháng 8 -11:00",
+            value=60.0,
+            unit="kg",
+            modifier = Modifier
+
+        )
 
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(t.Gap, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                MetricCard(
-                    title = "BMI", valueText = "18.5", dateText = dateText,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(t.CardHeight)
-                )
-                MetricCard(
-                    title = "Chiều cao", valueText = "180cm", dateText = dateText,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(t.CardHeight)
-                )
-                MetricCard(
-                    title = "Cân nặng", valueText = "60kg", dateText = dateText,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(t.CardHeight)
-                )
-            }
-        }
+
     }
+
+
 }
-
-
 @Preview(showBackground = true)
 @Composable
-private fun ProfileScreenPreview() {
-    MaterialTheme {
-        BodyMetricsScreen()
+fun  BodyBMI(){
+    val BackgroundColor= Color(0xFF225416).copy(0.2f)
+    Column (modifier = Modifier
+        .background(BackgroundColor)
+        .fillMaxSize()
+        .padding(horizontal = 16.dp)
+        .padding(vertical = 20.dp)
+
+    ){
+        TopBar()
+        Spacer(modifier = Modifier.height(25.dp))
+        ScreenProfile()
+
     }
+
+
 }
