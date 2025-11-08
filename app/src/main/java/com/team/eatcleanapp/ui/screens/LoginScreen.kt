@@ -199,23 +199,27 @@ fun Login(
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp)
             )
 
-            Spacer(modifier = Modifier.height(66.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
-            Button(
-                onClick = { onNextClick(email, password) },
-                modifier = Modifier
-                    .size(310.dp, 75.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PearlAqua),
-                shape = RoundedCornerShape(16.dp)
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.BottomCenter
             ) {
-                Text(
-                    "Đăng Nhập",
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
-                    color = White
-                )
+                Button(
+                    onClick = { onNextClick(email, password) },
+                    modifier = Modifier.size(310.dp, 75.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PearlAqua),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        "Đăng Nhập",
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
+                        color = White
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(33.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -235,6 +239,8 @@ fun Login(
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 24.sp)
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

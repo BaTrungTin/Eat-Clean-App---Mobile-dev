@@ -32,9 +32,9 @@ val Typography = Typography(
 
     titleLarge = TextStyle(
         fontFamily = ProtestStrike,
-        fontSize = 34.sp,
+        fontSize = 32.sp,
         lineHeight = 28.sp,
-        letterSpacing = 0.5.sp,
+        letterSpacing = 0.7.sp,
         textAlign = TextAlign.Center
     ),
 

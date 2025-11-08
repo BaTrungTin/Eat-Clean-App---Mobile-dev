@@ -18,5 +18,7 @@ val ForestGreen = Color(0xFF046E1F)
 val DarkSage = Color(0xFF2E5C3F)
 
 val PearlAqua = Color(0xFF8DC0AA)
+
+val LightGreen = Color(0xFFABDFAA)
 val Black = Color(0xFF000000)
 val White = Color(0xFFFFFFFF)

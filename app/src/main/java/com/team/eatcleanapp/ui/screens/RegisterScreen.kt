@@ -2,6 +2,7 @@ package com.team.eatcleanapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -268,23 +269,28 @@ fun Register(
             )
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = { onNextClick(name, email, password, confirmPassword) },
-            modifier = Modifier
-                .size(310.dp, 75.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PearlAqua),
-            shape = RoundedCornerShape(16.dp)
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Text(
-                "Đăng Ký",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
-                color = White
-            )
+            Button(
+                onClick = { onNextClick(name, email, password, confirmPassword) },
+                modifier = Modifier
+                    .size(310.dp, 75.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PearlAqua),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    "Đăng Ký",
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
+                    color = White
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(26.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -304,6 +310,8 @@ fun Register(
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 24.sp)
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
