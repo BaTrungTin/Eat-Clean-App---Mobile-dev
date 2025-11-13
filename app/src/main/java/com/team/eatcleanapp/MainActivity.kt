@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.team.eatcleanapp.ui.screens.Login
-import com.team.eatcleanapp.ui.screens.WellnessOverview
+import com.team.eatcleanapp.ui.screens.splash.SplashScreen
+//import com.team.eatcleanapp.navigation.AppNav
 import com.team.eatcleanapp.ui.theme.EatCleanAppMobiledevTheme
 
 class MainActivity : ComponentActivity()
@@ -18,11 +18,8 @@ class MainActivity : ComponentActivity()
         enableEdgeToEdge()
         setContent {
             EatCleanAppMobiledevTheme {
-                WellnessOverview(
-                    isFirstTime = true,
-                    onBackClick = {},
-                    onSaveSuccess = {}
-                )
+                //AppNav()
+                SplashScreen(){}
             }
         }
     }
