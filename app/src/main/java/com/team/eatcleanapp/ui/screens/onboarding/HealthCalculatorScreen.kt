@@ -1,7 +1,6 @@
-package com.team.eatcleanapp.ui.screens
+package com.team.eatcleanapp.ui.screens.onboarding
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,7 +29,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,7 +40,6 @@ import com.team.eatcleanapp.ui.theme.EatCleanAppMobiledevTheme
 import com.team.eatcleanapp.ui.theme.FernGreen
 import com.team.eatcleanapp.ui.theme.JungleGreen
 import com.team.eatcleanapp.ui.theme.LightGreen
-import com.team.eatcleanapp.ui.theme.PearlAqua
 import com.team.eatcleanapp.ui.theme.White
 
 fun calculateBMR(gender: String, age: Int?, weight: Double?, height: Double?): Double?
@@ -64,7 +60,7 @@ fun calculateBMR(gender: String, age: Int?, weight: Double?, height: Double?): D
 }
 
 @Composable
-fun WellnessOverview(
+fun HealthCalculatorScreen(
     isFirstTime: Boolean,
     onBackClick: () -> Unit,
     onSaveSuccess: () -> Unit
@@ -218,10 +214,10 @@ fun WellnessOverview(
 
 @Preview(showBackground = true)
 @Composable
-fun WellnessOverviewScreenPreview()
+fun HealthCalculatorPreview()
 {
     EatCleanAppMobiledevTheme {
-        WellnessOverview(
+        HealthCalculatorScreen(
             isFirstTime = false,
             onBackClick = {},
             onSaveSuccess = {}

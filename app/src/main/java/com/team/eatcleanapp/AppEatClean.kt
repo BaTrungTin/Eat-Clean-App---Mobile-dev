@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,20 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.team.eatcleanapp.ui.navigation.Destination
-import com.team.eatcleanapp.ui.screens.CalendarScreen
-import com.team.eatcleanapp.ui.screens.CommunityScreen
-import com.team.eatcleanapp.ui.screens.FavoriteScreen
-import com.team.eatcleanapp.ui.screens.Login
-import com.team.eatcleanapp.ui.screens.SearchScreen
 import com.team.eatcleanapp.ui.theme.EatCleanAppMobiledevTheme
 import com.team.eatcleanapp.ui.theme.FernGreen
-import com.team.eatcleanapp.ui.theme.ForestGreen
 import com.team.eatcleanapp.ui.theme.JungleGreen
 import com.team.eatcleanapp.ui.theme.LightGrayGreen
 import com.team.eatcleanapp.ui.theme.LightGreen
@@ -95,20 +86,7 @@ fun AppNavHost(
         navController,
         startDestination = Destination.HOME.route,
         modifier = modifier
-    ) {
-        composable(Destination.COMMUNITY.route) {
-            CommunityScreen()
-        }
-        composable(Destination.FAVORITE.route) {
-            FavoriteScreen()
-        }
-        composable(Destination.CALENDAR.route) {
-            CalendarScreen()
-        }
-        composable(Destination.SEARCH.route) {
-            SearchScreen()
-        }
-    }
+    ) {}
 }
 
 
