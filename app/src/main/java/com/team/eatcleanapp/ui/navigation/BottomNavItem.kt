@@ -2,17 +2,11 @@ package com.team.eatcleanapp.ui.navigation
 
 import com.team.eatcleanapp.R
 
-enum class Destination (
+enum class BottomNavItem (
     val route: String,
     val iconRes: Int,
     val contentDescription: String
 ) {
-    COMMUNITY(
-        "community",
-        R.drawable.community,
-        "Go to community"
-    ),
-
     FAVORITE(
         "favorite",
         R.drawable.heart,
@@ -25,15 +19,15 @@ enum class Destination (
         "Go to home"
     ),
 
-    CALENDAR(
-        "calendar",
-        R.drawable.calendar,
-        "Go to calendar"
+    DAILYMENU(
+        "dailymenu",
+        R.drawable.dailymenu,
+        "Go to daily menu"
     ),
 
-    SEARCH(
-        "search",
-        R.drawable.search,
+    MENU(
+        "menu",
+        R.drawable.menu,
         "Go to search"
     )
 }
