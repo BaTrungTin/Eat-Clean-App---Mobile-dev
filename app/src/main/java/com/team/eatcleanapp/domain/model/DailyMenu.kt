@@ -9,6 +9,7 @@ data class DailyMenu(
     val mealId: String,
     val mealName: String,
     val calories: Double,
+    val mealType: String, // BREAKFAST, LUNCH, DINNER, SNACK
     val protein: Double? = null,
     val carbs: Double? = null,
     val fat: Double? = null,
