@@ -30,10 +30,11 @@ class MainActivity : ComponentActivity()
 @Composable
 fun GreetingPreview() {
     EatCleanAppMobiledevTheme {
-        WellnessOverview(
+     /*   WellnessOverview(
             isFirstTime = true,
             onBackClick = {},
             onSaveSuccess = {}
-        )
+        )*/
+        SplashScreen(){}
     }
 }
