@@ -3,7 +3,7 @@ package com.team.eatcleanapp.util
 import com.team.eatcleanapp.domain.model.ActivityLevel
 import com.team.eatcleanapp.domain.model.Gender
 import com.team.eatcleanapp.domain.model.Goal
-import com.team.eatcleanapp.domain.model.MealTime
+import com.team.eatcleanapp.domain.model.MealCategory
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -18,7 +18,7 @@ object NutritionCalculator {
 
         val heightM = heightCm / CENTIMETERS_IN_METER
         val bmi = weightKg / (heightM * heightM)
-        return bmi
+        return bmi.roundTo(decimals = 1)
     }
 
     // BMR
@@ -49,10 +49,10 @@ object NutritionCalculator {
 
         return when {
             totalMinutesPerWeek < 60 -> ActivityLevel.SEDENTARY
-            totalMinutesPerWeek < 150 -> ActivityLevel.LIGHT
-            totalMinutesPerWeek < 300 -> ActivityLevel.MODERATE
-            totalMinutesPerWeek < 450 -> ActivityLevel.ACTIVE
-            else -> ActivityLevel.VERY_ACTIVE
+            totalMinutesPerWeek < 150 -> ActivityLevel.LIGHTLY_ACTIVE
+            totalMinutesPerWeek < 300 -> ActivityLevel.MODERATELY_ACTIVE
+            totalMinutesPerWeek < 450 -> ActivityLevel.VERY_ACTIVE
+            else -> ActivityLevel.EXTRA_ACTIVE
         }
     }
 
@@ -65,21 +65,21 @@ object NutritionCalculator {
 
         val factor = when (activityLevel) {
             ActivityLevel.SEDENTARY -> 1.2f
-            ActivityLevel.LIGHT -> 1.375f
-            ActivityLevel.MODERATE -> 1.55f
-            ActivityLevel.ACTIVE -> 1.725f
-            ActivityLevel.VERY_ACTIVE -> 1.9f
+            ActivityLevel.LIGHTLY_ACTIVE -> 1.375f
+            ActivityLevel.MODERATELY_ACTIVE -> 1.55f
+            ActivityLevel.VERY_ACTIVE -> 1.725f
+            ActivityLevel.EXTRA_ACTIVE -> 1.9f
         }
 
         val tdee = bmr * factor
-        return tdee
+        return tdee.roundTo(decimals = 1)
     }
 
     // kcal từng buổi ăn
     fun calculateMealCalories(
         tdee: Float,
         goal: Goal,
-        mealTime: MealTime
+        mealCategory: MealCategory
     ): Int {
         if (tdee <= 0f) return 0
 
@@ -105,11 +105,10 @@ object NutritionCalculator {
             }
         }
 
-        val percent = when (mealTime) {
-            MealTime.BREAKFAST -> breakfastPercent
-            MealTime.LUNCH -> lunchPercent
-            MealTime.DINNER -> dinnerPercent
-            MealTime.SNACK -> 0.10f
+        val percent = when (mealCategory) {
+            MealCategory.BREAKFAST -> breakfastPercent
+            MealCategory.LUNCH -> lunchPercent
+            MealCategory.DINNER -> dinnerPercent
         }
 
         return (tdee * percent).roundToInt()
@@ -117,7 +116,7 @@ object NutritionCalculator {
 
     // lam tron
     private fun Float.roundTo(decimals: Int): Float {
-        val factor = 10f.pow(decimals)
+        val factor = 10f.pow(decimals.toFloat())
         return (this * factor).roundToInt() / factor
     }
 
