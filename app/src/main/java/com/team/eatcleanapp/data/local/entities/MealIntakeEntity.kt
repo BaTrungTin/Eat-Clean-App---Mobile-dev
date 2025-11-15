@@ -19,4 +19,3 @@ data class MealIntakeEntity(
     val totalCalories : Double
 
 )
-
