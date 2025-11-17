@@ -32,4 +32,3 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyMenuDao(): DailyMenuDao
     abstract fun mealIntakeDao(): MealIntakeDao
 }
-

@@ -4,15 +4,7 @@ data class Meal(
     val id: String?,
     val name: String,
     val calories: Double,
-    val image: String,
-    val ingredients: List<String>,
-    val instructions: List<String>,
-    val category: MealCategory,
-    val isFavorite: Boolean
+    val image: String? = null,
+    val ingredients: String,
+    val instructions: String
 )
-
-enum class MealCategory {
-    BREAKFAST,
-    LUNCH,
-    DINNER
-}
