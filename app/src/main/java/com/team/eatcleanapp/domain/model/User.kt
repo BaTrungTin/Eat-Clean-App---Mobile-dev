@@ -8,13 +8,35 @@ data class User(
     val weight: Double,
     val height: Double,
     val age: Int,
-    val gender: String, // MALE, FEMALE
+    val gender: Gender,
     val activityMinutesPerDay: Int,
     val activityDaysPerWeek: Int,
-    val activityLevel: String,  // SEDENTARY, LIGHTLY_ACTIVE, MODERATELY_ACTIVE, VERY_ACTIVE, EXTRA_ACTIVE
-    val goal: String,   //LOSE_WEIGHT, MAINTAIN_WEIGHT, GAIN_WEIGHT
-    val avatarUrl: String?
+    val activityLevel: ActivityLevel,
+    val goal: Goal,
+    val avatarUrl: String?,
+    val healthMetrics: HealthMetrics?
 )
+// tạo enum  "ActivityLevel" để biến "val activityLevel" ở trên hứng giá trị hoạt động
+enum class ActivityLevel {
+    SEDENTARY,
+    LIGHTLY_ACTIVE,
+    MODERATELY_ACTIVE,
+    VERY_ACTIVE,
+    EXTRA_ACTIVE
+}
+
+// tạo enum "Goal" để biến "val goal" ở trên hứng giá trị mục tiêu
+enum class Goal {
+    LOSE_WEIGHT,
+    MAINTAIN_WEIGHT,
+    GAIN_WEIGHT
+}
+// tạo enum "MealCategory" để tham số mealCategory trong hàm "calculateMealCalories"  hứng giá trị là bữa nào
+enum class MealCategory {
+    BREAKFAST,
+    LUNCH,
+    DINNER
+}
 
 enum class Gender {
     MALE,

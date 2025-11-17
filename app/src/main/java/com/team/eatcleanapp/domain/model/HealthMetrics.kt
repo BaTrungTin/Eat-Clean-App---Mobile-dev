@@ -1,19 +1,13 @@
 package com.team.eatcleanapp.domain.model
 
-
-// HealthMetrics
+/**
+ * Data class để lưu trữ các chỉ số sức khỏe đã được tính toán của người dùng.
+ * Các giá trị này được tạo ra bằng cách sử dụng `NutritionCalculator`.
+ */
 data class HealthMetrics(
-    val weightKg : Float,
-    val heightCm : Float,
-    val age : Int,
-    val gender : Gender,
-    val activityMinutesPerDay : Int,
-    val activityDaysPerWeek : Int,
-    val activityLevel : ActivityLevel,
-    val goal: Goal,
-    val bmi: Float = 0f,
-    val bmr: Float = 0f,
-    val tdee: Float = 0f
+    val bmi: Float,  // Chỉ số khối cơ thể
+    val bmr: Float,  // Tỷ lệ trao đổi chất cơ bản
+    val tdee: Float, // Tổng năng lượng tiêu thụ hàng ngày
 
 
- )
+)

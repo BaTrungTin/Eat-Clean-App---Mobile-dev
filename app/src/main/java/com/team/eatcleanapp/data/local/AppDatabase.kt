@@ -5,12 +5,14 @@ import androidx.room.RoomDatabase
 import com.team.eatcleanapp.data.local.dao.DailyMenuDao
 import com.team.eatcleanapp.data.local.dao.FavoriteDao
 import com.team.eatcleanapp.data.local.dao.MealDao
+import com.team.eatcleanapp.data.local.dao.MealIntakeDao
 import com.team.eatcleanapp.data.local.dao.UserDao
 import com.team.eatcleanapp.data.local.entities.DailyMenuEntity
 import com.team.eatcleanapp.data.local.entities.FavoriteEntity
 import com.team.eatcleanapp.data.local.entities.MealEntity
+import com.team.eatcleanapp.data.local.entities.MealIntakeEntity
 import com.team.eatcleanapp.data.local.entities.UserEntity
-import com.team.eatcleanapp.domain.model.MealIntake
+
 import com.team.eatcleanapp.util.Constants
 
 @Database(
