@@ -39,7 +39,13 @@ interface DailyMenuRepository {
         date: Date,
         meals: List<MealToAdd>
     ): Result<List<Long>>
-    
+
+    /**
+     * BỔ SUNG HÀM UPDATE
+     * Update the consumed status of a specific meal intake.
+     */
+    suspend fun updateMealIntake(mealIntakeId: Long, isConsumed: Boolean): Result<Unit>
+
     /**
      * Delete a specific meal from daily menu
      */

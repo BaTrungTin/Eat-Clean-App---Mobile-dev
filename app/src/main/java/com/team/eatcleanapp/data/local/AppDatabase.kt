@@ -12,6 +12,10 @@ import com.team.eatcleanapp.data.local.entities.FavoriteEntity
 import com.team.eatcleanapp.data.local.entities.MealEntity
 import com.team.eatcleanapp.data.local.entities.MealIntakeEntity
 import com.team.eatcleanapp.data.local.entities.UserEntity
+<<<<<<< HEAD
+=======
+
+>>>>>>> feature/health-dong
 import com.team.eatcleanapp.util.Constants
 
 @Database(
