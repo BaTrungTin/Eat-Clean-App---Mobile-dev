@@ -42,12 +42,6 @@ class FavoriteRepositoryImpl(
         category: String
     ): Result<Long> {
         return try {
-            // Check if already favorite
-            val existing = favoriteDao.getFavoriteByMealId(userId, mealId)
-            if (existing != null) {
-                return Result.Success(existing.id)
-            }
-            
             val entity = FavoriteEntity(
                 userId = userId,
                 mealId = mealId,
@@ -57,8 +51,9 @@ class FavoriteRepositoryImpl(
                 category = category,
                 createdAt = System.currentTimeMillis()
             )
-            val id = favoriteDao.insertFavorite(entity)
-            Result.Success(id)
+            favoriteDao.addFavorite(entity)
+            // Return a dummy ID since we're using composite key
+            Result.Success(0L)
         } catch (e: Exception) {
             Result.Error(e)
         }
@@ -66,7 +61,7 @@ class FavoriteRepositoryImpl(
     
     override suspend fun removeFavorite(userId: String, mealId: String): Result<Unit> {
         return try {
-            favoriteDao.deleteFavoriteByMealId(userId, mealId)
+            favoriteDao.removeFavorite(userId, mealId)
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e)

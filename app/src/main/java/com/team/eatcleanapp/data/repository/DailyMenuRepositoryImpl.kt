@@ -17,7 +17,7 @@ class DailyMenuRepositoryImpl(
     
     override fun getDailyMenu(userId: String, date: Date): Flow<Result<List<DailyMenu>>> {
         val dateTimestamp = DateUtils.getStartOfDay(date).time
-        return dailyMenuDao.getDailyMenuByDate(userId, dateTimestamp)
+        return dailyMenuDao.getMenuByDate(userId, dateTimestamp)
             .map { entities ->
                 Result.Success(entities.map { it.toDomainModel() })
             }

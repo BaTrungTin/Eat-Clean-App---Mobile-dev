@@ -7,13 +7,7 @@ object Constants {
     
     // Database
     const val DATABASE_NAME = "eatclean_database"
-    const val DATABASE_VERSION = 1
-    
-    // SharedPreferences
-    const val PREF_NAME = "eatclean_prefs"
-    const val PREF_USER_ID = "user_id"
-    const val PREF_USER_EMAIL = "user_email"
-    const val PREF_IS_LOGGED_IN = "is_logged_in"
+    const val DATABASE_VERSION = 3
     
     // Date Format
     const val DATE_FORMAT = "yyyy-MM-dd"
