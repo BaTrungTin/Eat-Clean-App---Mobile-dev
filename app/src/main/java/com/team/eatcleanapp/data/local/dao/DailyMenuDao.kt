@@ -9,7 +9,7 @@ interface DailyMenuDao {
     
     // Get daily menu for a specific date
     @Query("SELECT * FROM daily_menu WHERE userId = :userId AND date = :date ORDER BY mealType, createdAt")
-    fun getDailyMenuByDate(userId: String, date: Long): Flow<List<DailyMenuEntity>>
+    fun getMenuByDate(userId: String, date: Long): Flow<List<DailyMenuEntity>>
     
     // Get daily menu for a specific date (suspend function)
     @Query("SELECT * FROM daily_menu WHERE userId = :userId AND date = :date ORDER BY mealType, createdAt")

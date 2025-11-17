@@ -17,16 +17,16 @@ interface FavoriteDao {
     suspend fun isFavorite(userId: String, mealId: String): Boolean
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFavorite(favorite: FavoriteEntity): Long
+    suspend fun addFavorite(favorite: FavoriteEntity)
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFavorites(favorites: List<FavoriteEntity>): List<Long>
+    suspend fun addFavorites(favorites: List<FavoriteEntity>)
+    
+    @Query("DELETE FROM favorites WHERE userId = :userId AND mealId = :mealId")
+    suspend fun removeFavorite(userId: String, mealId: String)
     
     @Delete
     suspend fun deleteFavorite(favorite: FavoriteEntity)
-    
-    @Query("DELETE FROM favorites WHERE userId = :userId AND mealId = :mealId")
-    suspend fun deleteFavoriteByMealId(userId: String, mealId: String)
     
     @Query("DELETE FROM favorites WHERE userId = :userId")
     suspend fun deleteAllFavoritesByUserId(userId: String)
