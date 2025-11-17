@@ -17,18 +17,16 @@ class AddToFavoriteUseCase(
         }
 
         return try {
-            // Lấy thông tin meal để có đầy đủ thông tin cần thiết
             val meal = mealRepository.getMealDetail(mealId)
                 ?: return Result.Error(IllegalArgumentException("Không tìm thấy món ăn với id: $mealId"))
 
-            // Thêm vào favorite với đầy đủ thông tin
             favoriteRepository.addFavorite(
                 userId = userId,
                 mealId = mealId,
                 mealName = meal.name,
                 calories = meal.calories,
                 image = meal.image ?: "",
-                category = "GENERAL" // Default category, có thể cải thiện sau
+                category = "GENERAL"
             )
         } catch (e: Exception) {
             Result.Error(e)
