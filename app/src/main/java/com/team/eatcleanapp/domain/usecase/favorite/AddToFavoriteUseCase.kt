@@ -3,8 +3,9 @@ package com.team.eatcleanapp.domain.usecase.favorite
 import com.team.eatcleanapp.domain.repository.FavoriteRepository
 import com.team.eatcleanapp.domain.repository.MealRepository
 import com.team.eatcleanapp.util.Result
+import javax.inject.Inject
 
-class AddToFavoriteUseCase(
+class AddToFavoriteUseCase @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val mealRepository: MealRepository
 ) {
@@ -24,7 +25,7 @@ class AddToFavoriteUseCase(
                 userId = userId,
                 mealId = mealId,
                 mealName = meal.name,
-                calories = meal.calories,
+                calories = meal.totalCalories,
                 image = meal.image ?: "",
                 category = "GENERAL"
             )
@@ -33,4 +34,3 @@ class AddToFavoriteUseCase(
         }
     }
 }
-

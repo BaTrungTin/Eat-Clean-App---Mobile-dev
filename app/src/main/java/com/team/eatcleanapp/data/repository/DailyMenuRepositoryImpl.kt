@@ -19,7 +19,7 @@ class DailyMenuRepositoryImpl(
         val dateTimestamp = DateUtils.getStartOfDay(date).time
         return dailyMenuDao.getMenuByDate(userId, dateTimestamp)
             .map { entities ->
-                Result.Success(entities.map { it.toDomainModel() })
+                Result.Success(entities.map { it.toDomainModel() }) as Result<List<DailyMenu>>
             }
             .catch { e ->
                 emit(Result.Error(e))
@@ -33,7 +33,7 @@ class DailyMenuRepositoryImpl(
         
         return dailyMenuDao.getWeeklyMenu(userId, startTimestamp, endTimestamp)
             .map { entities ->
-                Result.Success(entities.map { it.toDomainModel() })
+                Result.Success(entities.map { it.toDomainModel() }) as Result<List<DailyMenu>>
             }
             .catch { e ->
                 emit(Result.Error(e))
@@ -102,6 +102,15 @@ class DailyMenuRepositoryImpl(
             Result.Error(e)
         }
     }
+
+    override suspend fun updateMealIntake(mealIntakeId: Long, isConsumed: Boolean): Result<Unit> {
+        return try {
+            dailyMenuDao.updateMealIntake(mealIntakeId, isConsumed)
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
     
     override suspend fun deleteMeal(mealId: Long): Result<Unit> {
         return try {
@@ -139,4 +148,3 @@ class DailyMenuRepositoryImpl(
         )
     }
 }
-

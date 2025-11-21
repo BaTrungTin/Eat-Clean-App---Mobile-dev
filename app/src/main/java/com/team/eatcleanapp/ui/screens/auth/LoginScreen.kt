@@ -1,5 +1,6 @@
 package com.team.eatcleanapp.ui.screens.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,12 +25,14 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,6 +40,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.team.eatcleanapp.R
 import com.team.eatcleanapp.ui.theme.Black
 import com.team.eatcleanapp.ui.theme.EatCleanAppMobiledevTheme
@@ -47,10 +52,61 @@ import com.team.eatcleanapp.ui.theme.PearlAqua
 import com.team.eatcleanapp.ui.theme.White
 
 @Composable
-fun Login(
-    onNextClick: (String, String) -> Unit,
+fun LoginScreen(
+    onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
+    onForgotPasswordClick: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
+    val state by viewModel.authState
+    val context = LocalContext.current
+
+    // Lắng nghe sự thay đổi trạng thái để hiển thị thông báo hoặc chuyển màn hình
+    LaunchedEffect(state) {
+        when (val s = state) {
+            is AuthState.LoginSuccess -> {
+                Toast.makeText(context, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+                onLoginSuccess()
+            }
+            is AuthState.Error -> {
+                Toast.makeText(context, s.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+            }
+            else -> {}
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LoginContent(
+            onLoginClick = { email, password ->
+                viewModel.login(email, password)
+            },
+            onRegisterClick = onRegisterClick,
+            onForgotPasswordClick = onForgotPasswordClick,
+            isLoading = state is AuthState.Loading
+        )
+        
+        // Hiển thị loading indicator nếu đang xử lý
+        if (state is AuthState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = PearlAqua)
+            }
+        }
+    }
+}
+
+@Composable
+fun LoginContent(
+    onLoginClick: (String, String) -> Unit,
+    onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit,
+    isLoading: Boolean = false
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -112,6 +168,7 @@ fun Login(
                 },
 
                 singleLine = true,
+                enabled = !isLoading,
 
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = ForestGreen,
@@ -173,6 +230,7 @@ fun Login(
                         PasswordVisualTransformation(),
 
                 singleLine = true,
+                enabled = !isLoading,
 
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = ForestGreen,
@@ -194,7 +252,7 @@ fun Login(
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(end = 20.dp, top = 10.dp)
-                    .clickable { onForgotPasswordClick() },
+                    .clickable(enabled = !isLoading) { onForgotPasswordClick() },
                 color = ForestGreen.copy(alpha = 0.5f),
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp)
             )
@@ -206,13 +264,14 @@ fun Login(
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Button(
-                    onClick = { onNextClick(email, password) },
+                    onClick = { onLoginClick(email, password) },
                     modifier = Modifier.size(310.dp, 75.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PearlAqua),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = !isLoading
                 ) {
                     Text(
-                        "Đăng Nhập",
+                        if (isLoading) "Đang xử lý..." else "Đăng Nhập",
                         style = MaterialTheme.typography.titleLarge.copy(fontSize = 30.sp),
                         color = White
                     )
@@ -234,7 +293,7 @@ fun Login(
                     "Đăng Ký",
                     modifier = Modifier
                         .padding(start = 6.dp)
-                        .clickable { onRegisterClick() },
+                        .clickable(enabled = !isLoading) { onRegisterClick() },
                     color = ForestGreen.copy(alpha = 0.5f),
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 24.sp)
                 )
@@ -250,8 +309,8 @@ fun Login(
 fun LoginScreenPreview()
 {
     EatCleanAppMobiledevTheme {
-        Login(
-            onNextClick = { _, _ -> },
+        LoginContent(
+            onLoginClick = { _, _ -> },
             onRegisterClick = {},
             onForgotPasswordClick = {}
         )

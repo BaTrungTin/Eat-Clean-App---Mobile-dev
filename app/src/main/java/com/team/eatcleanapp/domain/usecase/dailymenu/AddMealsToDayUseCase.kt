@@ -52,11 +52,11 @@ class AddMealsToDayUseCase @Inject constructor(
                 DailyMenuRepository.MealToAdd(
                     mealId = id,
                     mealName = meal.name,
-                    calories = meal.calories.toDouble(),
+                    calories = meal.totalCalories, // Sửa thành totalCalories vì class Meal không còn trường calories trực tiếp
                     mealType = params.mealCategory.name,
-                    protein = null,
-                    carbs = null,
-                    fat = null
+                    protein = meal.totalProtein,   // Lấy giá trị từ Meal mới
+                    carbs = meal.totalCarbs,       // Lấy giá trị từ Meal mới
+                    fat = meal.totalFat            // Lấy giá trị từ Meal mới
                 )
             )
         }

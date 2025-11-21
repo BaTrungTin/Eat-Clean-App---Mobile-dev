@@ -1,22 +1,22 @@
 package com.team.eatcleanapp.domain.model
 
 data class User(
-    val id: String,
-    val email: String,
-    val password: String,
-    val name: String,
-    val weight: Double,
-    val height: Double,
-    val age: Int,
-    val gender: Gender,
-    val activityMinutesPerDay: Int,
-    val activityDaysPerWeek: Int,
-    val activityLevel: ActivityLevel,
-    val goal: Goal,
-    val avatarUrl: String?,
-    val healthMetrics: HealthMetrics?
+    val id: String = "",
+    val email: String = "",
+    val password: String = "",
+    val name: String = "",
+    val weight: Double = 0.0,
+    val height: Double = 0.0,
+    val age: Int = 0,
+    val gender: Gender = Gender.MALE,
+    val activityMinutesPerDay: Int = 0,
+    val activityDaysPerWeek: Int = 0,
+    val activityLevel: ActivityLevel = ActivityLevel.SEDENTARY,
+    val goal: Goal = Goal.MAINTAIN_WEIGHT,
+    val avatarUrl: String? = null,
+    val healthMetrics: HealthMetrics? = null
 )
-// tạo enum  "ActivityLevel" để biến "val activityLevel" ở trên hứng giá trị hoạt động
+
 enum class ActivityLevel {
     SEDENTARY,
     LIGHTLY_ACTIVE,
@@ -25,13 +25,12 @@ enum class ActivityLevel {
     EXTRA_ACTIVE
 }
 
-// tạo enum "Goal" để biến "val goal" ở trên hứng giá trị mục tiêu
 enum class Goal {
     LOSE_WEIGHT,
     MAINTAIN_WEIGHT,
     GAIN_WEIGHT
 }
-// tạo enum "MealCategory" để tham số mealCategory trong hàm "calculateMealCalories"  hứng giá trị là bữa nào
+
 enum class MealCategory {
     BREAKFAST,
     LUNCH,
