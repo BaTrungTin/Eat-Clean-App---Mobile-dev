@@ -2,8 +2,9 @@ package com.team.eatcleanapp.domain.usecase.favorite
 
 import com.team.eatcleanapp.domain.repository.FavoriteRepository
 import com.team.eatcleanapp.util.Result
+import javax.inject.Inject
 
-class RemoveFromFavoriteUseCase(
+class RemoveFromFavoriteUseCase @Inject constructor(
     private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(
@@ -17,4 +18,3 @@ class RemoveFromFavoriteUseCase(
         return repository.removeFavorite(userId, mealId)
     }
 }
-

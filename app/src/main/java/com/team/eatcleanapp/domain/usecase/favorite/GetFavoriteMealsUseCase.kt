@@ -4,8 +4,9 @@ import com.team.eatcleanapp.domain.model.Meal
 import com.team.eatcleanapp.domain.repository.FavoriteRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class GetFavoriteMealsUseCase(
+class GetFavoriteMealsUseCase @Inject constructor(
     private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(userId: String): List<Meal> {
@@ -24,4 +25,3 @@ class GetFavoriteMealsUseCase(
         }
     }
 }
-

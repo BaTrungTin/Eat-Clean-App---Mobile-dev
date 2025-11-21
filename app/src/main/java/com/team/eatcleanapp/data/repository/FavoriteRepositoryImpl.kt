@@ -2,22 +2,24 @@ package com.team.eatcleanapp.data.repository
 
 import com.team.eatcleanapp.data.local.dao.FavoriteDao
 import com.team.eatcleanapp.data.local.entities.FavoriteEntity
+import com.team.eatcleanapp.domain.model.Ingredient
 import com.team.eatcleanapp.domain.model.Meal
-import com.team.eatcleanapp.domain.model.MealCategory
 import com.team.eatcleanapp.domain.repository.FavoriteRepository
 import com.team.eatcleanapp.util.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class FavoriteRepositoryImpl(
+class FavoriteRepositoryImpl @Inject constructor(
     private val favoriteDao: FavoriteDao
 ) : FavoriteRepository {
     
     override fun getFavorites(userId: String): Flow<Result<List<Meal>>> {
         return favoriteDao.getAllFavoritesByUserId(userId)
             .map { entities ->
-                Result.Success(entities.map { it.toDomainModel() })
+                val meals = entities.map { it.toDomainModel() }
+                Result.Success(meals) as Result<List<Meal>>
             }
             .catch { e ->
                 emit(Result.Error(e))
@@ -52,7 +54,6 @@ class FavoriteRepositoryImpl(
                 createdAt = System.currentTimeMillis()
             )
             favoriteDao.addFavorite(entity)
-            // Return a dummy ID since we're using composite key
             Result.Success(0L)
         } catch (e: Exception) {
             Result.Error(e)
@@ -78,22 +79,20 @@ class FavoriteRepositoryImpl(
     }
     
     private fun FavoriteEntity.toDomainModel(): Meal {
-        val category = try {
-            MealCategory.valueOf(category)
-        } catch (e: Exception) {
-            MealCategory.BREAKFAST
-        }
-        
+        // Tạo một thành phần giả (dummy ingredient) để lưu giá trị calo đã lưu
+        // Vì Meal tính toán totalCalories từ danh sách ingredients
+        val dummyIngredient = Ingredient(
+            name = "Stored Calories",
+            quantity = 100.0, // 100g
+            caloriesPer100 = this.calories // Calo trên 100g = tổng calo đã lưu
+        )
+
         return Meal(
             id = mealId,
             name = mealName,
-            calories = calories,
             image = image,
-            ingredients = emptyList(), // Favorites might not have full details
-            instructions = emptyList(),
-            category = category,
-            isFavorite = true
+            ingredients = listOf(dummyIngredient), // Truyền dummy list vào
+            instructions = emptyList()
         )
     }
 }
-

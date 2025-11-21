@@ -52,6 +52,10 @@ interface DailyMenuDao {
     // Insert multiple meals
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMeals(meals: List<DailyMenuEntity>): List<Long>
+
+    // Update meal intake
+    @Query("UPDATE daily_menu SET isConsumed = :isConsumed WHERE id = :mealIntakeId")
+    suspend fun updateMealIntake(mealIntakeId: Long, isConsumed: Boolean)
     
     // Delete specific meal
     @Delete

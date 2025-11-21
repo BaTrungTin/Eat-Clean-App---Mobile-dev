@@ -23,6 +23,7 @@ data class DailyMenuEntity(
     val carbs: Double? = null,
     val fat: Double? = null,
     val mealType: String, // BREAKFAST, LUNCH, DINNER, SNACK
+    val isConsumed: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
