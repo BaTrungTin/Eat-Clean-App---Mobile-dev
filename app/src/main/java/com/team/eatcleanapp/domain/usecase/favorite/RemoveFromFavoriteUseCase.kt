@@ -14,7 +14,6 @@ class RemoveFromFavoriteUseCase(
             return Result.Error(IllegalArgumentException("UserId và MealId không được để trống"))
         }
 
-        return repository.removeFavorite(userId, mealId)
+        return repository.removeFromFavorite(userId, mealId)
     }
 }
-

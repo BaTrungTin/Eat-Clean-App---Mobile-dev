@@ -16,7 +16,8 @@ sealed class Result<out T> {
     
     fun getOrNull(): T? = when (this) {
         is Success -> data
-        else -> null
+        is Error -> null
+        Loading -> null
     }
     
     fun getOrThrow(): T = when (this) {

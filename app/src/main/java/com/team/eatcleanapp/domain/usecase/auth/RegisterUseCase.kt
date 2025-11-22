@@ -1,39 +1,61 @@
 package com.team.eatcleanapp.domain.usecase.auth
 
 import com.team.eatcleanapp.domain.model.User
-import com.team.eatcleanapp.domain.repository.UserRepository
+import com.team.eatcleanapp.domain.repository.AuthRepository
 import com.team.eatcleanapp.util.Result
 import com.team.eatcleanapp.util.Constants
+import com.team.eatcleanapp.domain.model.*
 
 class RegisterUseCase(
-    private val repository: UserRepository
+    private val authRepository: AuthRepository
 ) {
     suspend fun register(
-        user: User,
-        confirmPassword: String
+        email: String,
+        password: String,
+        confirmPassword: String,
+        name: String
     ): Result<User> {
-        if (user.email.isBlank() || user.password.isBlank() || confirmPassword.isBlank() || user.name.isBlank())
-            return Result.Error(IllegalArgumentException("Vui long dien day du thong tin"))
+        if (email.isBlank() || password.isBlank() || confirmPassword.isBlank() || name.isBlank())
+            return Result.Error(IllegalArgumentException("Vui lòng điền đầy đủ thông tin"))
 
-        if (user.email.length < Constants.MIN_EMAIL_LENGTH || !user.email.contains("@"))
-            return Result.Error(IllegalArgumentException("Email khong hop le"))
+        if (email.length < Constants.MIN_EMAIL_LENGTH || !email.contains("@"))
+            return Result.Error(IllegalArgumentException("Email không hợp lệ"))
 
-        if (user.password.length < Constants.MIN_PASSWORD_LENGTH)
-            return Result.Error(IllegalArgumentException("Mat khau phai co it nhat ${Constants.MIN_PASSWORD_LENGTH} ky tu"))
+        if (password.length < Constants.MIN_PASSWORD_LENGTH)
+            return Result.Error(IllegalArgumentException("Mật khẩu phải có ít nhất ${Constants.MIN_PASSWORD_LENGTH} ký tự"))
 
-        if (user.password != confirmPassword)
-            return Result.Error(IllegalArgumentException("Mat khau xac nhan khong trung khop"))
+        if (password != confirmPassword)
+            return Result.Error(IllegalArgumentException("Mật khẩu xác nhận không trùng khớp"))
 
-        if (user.name.length > Constants.MAX_NAME_LENGTH)
-            return Result.Error(IllegalArgumentException("Ten khong duoc qua ${Constants.MAX_NAME_LENGTH} ky tu"))
+        if (name.length > Constants.MAX_NAME_LENGTH)
+            return Result.Error(IllegalArgumentException("Tên không được quá ${Constants.MAX_NAME_LENGTH} ký tự"))
 
-        val checkEmail = repository.checkEmailExists(user.email)
-        if (checkEmail is Result.Error)
-            return checkEmail
-        if (checkEmail is Result.Success && checkEmail.data)
-            return Result.Error(IllegalArgumentException("Email đã được sử dụng"))
+        // Gọi authRepository để đăng ký
+        val registerResult = authRepository.registerUser(email, password)
 
-        val userToRegister = user.copy(id = "")
-        return repository.registerUser(userToRegister)
+        return when (registerResult) {
+            is Result.Success -> {
+                val userId = registerResult.data
+                // Tạo user object với thông tin đầy đủ
+                val user = User(
+                    id = userId,
+                    email = email,
+                    name = name,
+                    weight = 0.0,
+                    height = 0.0,
+                    age = 0,
+                    gender = Gender.MALE,
+                    activityMinutesPerDay = 0,
+                    activityDaysPerWeek = 0,
+                    activityLevel = ActivityLevel.SEDENTARY,
+                    goal = Goal.MAINTAIN_WEIGHT,
+                    healthMetrics = null
+                )
+                // Hoàn thành đăng ký với thông tin user
+                authRepository.completeRegistration(user)
+            }
+            is Result.Error -> registerResult
+            is Result.Loading -> Result.Error(IllegalStateException("Đang xử lý đăng ký"))
+        }
     }
 }

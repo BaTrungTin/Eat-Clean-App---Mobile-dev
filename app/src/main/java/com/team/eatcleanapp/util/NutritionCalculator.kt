@@ -3,7 +3,7 @@ package com.team.eatcleanapp.util
 import com.team.eatcleanapp.domain.model.ActivityLevel
 import com.team.eatcleanapp.domain.model.Gender
 import com.team.eatcleanapp.domain.model.Goal
-import com.team.eatcleanapp.domain.model.MealCategory
+import com.team.eatcleanapp.domain.model.dailymenu.MealCategory
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt

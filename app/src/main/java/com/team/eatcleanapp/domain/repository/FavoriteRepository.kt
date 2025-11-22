@@ -1,40 +1,30 @@
 package com.team.eatcleanapp.domain.repository
 
+import com.team.eatcleanapp.domain.model.Favorite
 import com.team.eatcleanapp.domain.model.Meal
 import com.team.eatcleanapp.util.Result
-import kotlinx.coroutines.flow.Flow
 
 interface FavoriteRepository {
-    /**
-     * Get all favorite meals for a user
-     */
-    fun getFavorites(userId: String): Flow<Result<List<Meal>>>
-    
-    /**
-     * Check if a meal is favorite
-     */
-    suspend fun isFavorite(userId: String, mealId: String): Result<Boolean>
-    
-    /**
-     * Add meal to favorites
-     */
-    suspend fun addFavorite(
-        userId: String,
-        mealId: String,
-        mealName: String,
-        calories: Double,
-        image: String,
-        category: String
-    ): Result<Long>
-    
-    /**
-     * Remove meal from favorites
-     */
-    suspend fun removeFavorite(userId: String, mealId: String): Result<Unit>
-    
-    /**
-     * Get favorite count for a user
-     */
-    suspend fun getFavoriteCount(userId: String): Result<Int>
-}
+    // Lấy tất cả favorites
+    suspend fun getFavoritesByUserId(userId: String): Result<List<Favorite>>
 
+    // Kiểm tra có favorite không
+    suspend fun isFavorite(userId: String, mealId: String): Result<Boolean>
+
+    // Thêm vào favorite
+    suspend fun addToFavorite(userId: String, meal: Meal): Result<Unit>
+
+    // Xóa khỏi favorite
+    suspend fun removeFromFavorite(userId: String, mealId: String): Result<Unit>
+
+    // Cập nhật customized meal
+    suspend fun updateCustomizedMeal(userId: String, mealId: String, updatedMeal: Meal): Result<Unit>
+
+    // Lấy meal detail (ưu tiên từ favorite nếu customized)
+    suspend fun getMealDetail(userId: String, mealId: String): Result<Meal>
+
+    // Đếm số favorites
+    suspend fun getFavoriteCount(userId: String): Result<Int>
+
+    suspend fun deleteAllFavoritesByUserId(userId: String): Result<Unit>
+}

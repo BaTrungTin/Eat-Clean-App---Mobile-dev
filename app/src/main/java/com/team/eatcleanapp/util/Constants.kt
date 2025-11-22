@@ -11,9 +11,7 @@ object Constants {
     
     // Date Format
     const val DATE_FORMAT = "yyyy-MM-dd"
-    const val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
-    const val TIME_FORMAT = "HH:mm"
-    
+
     // Default Values
     const val DEFAULT_PORTION_SIZE = 1.0
     const val DEFAULT_CALORIES_PER_DAY = 2000.0

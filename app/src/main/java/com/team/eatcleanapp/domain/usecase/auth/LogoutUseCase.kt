@@ -1,15 +1,12 @@
 package com.team.eatcleanapp.domain.usecase.auth
 
+import com.team.eatcleanapp.domain.repository.AuthRepository
 import com.team.eatcleanapp.util.Result
 
-class LogoutUseCase {
+class LogoutUseCase(
+    private val authRepository: AuthRepository
+) {
     suspend fun execute(): Result<Unit> {
-        return try {
-            // Clear user session
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e)
-        }
+        return authRepository.logout()
     }
 }
-

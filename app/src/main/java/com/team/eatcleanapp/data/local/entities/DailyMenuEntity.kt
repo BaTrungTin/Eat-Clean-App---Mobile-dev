@@ -3,6 +3,7 @@ package com.team.eatcleanapp.data.local.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
+import com.team.eatcleanapp.util.DateUtils
 
 @Entity(
     tableName = "daily_menu",
@@ -12,18 +13,14 @@ import androidx.room.Index
     ]
 )
 data class DailyMenuEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey
+    val id: String,
     val userId: String,
-    val date: Long, // Timestamp in milliseconds
+    val date: String, // Format: "yyyy-MM-dd" (chỉ lưu ngày)
     val mealId: String,
     val mealName: String,
     val calories: Double,
-    val protein: Double? = null,
-    val carbs: Double? = null,
-    val fat: Double? = null,
-    val mealType: String, // BREAKFAST, LUNCH, DINNER, SNACK
-    val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val quantity: Double,
+    val unit: String,
+    val category: String // BREAKFAST, LUNCH, DINNER
 )
-

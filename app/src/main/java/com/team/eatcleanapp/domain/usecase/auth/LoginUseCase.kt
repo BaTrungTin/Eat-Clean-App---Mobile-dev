@@ -1,12 +1,12 @@
 package com.team.eatcleanapp.domain.usecase.auth
 
 import com.team.eatcleanapp.domain.model.User
-import com.team.eatcleanapp.domain.repository.UserRepository
+import com.team.eatcleanapp.domain.repository.AuthRepository
 import com.team.eatcleanapp.util.Result
 import com.team.eatcleanapp.util.Constants
 
 class LoginUseCase(
-    private val repository: UserRepository
+    private val authRepository: AuthRepository
 ) {
     suspend fun login(
         email: String,
@@ -19,8 +19,8 @@ class LoginUseCase(
             return Result.Error(IllegalArgumentException("Email không hợp lệ"))
 
         if (password.length < Constants.MIN_PASSWORD_LENGTH)
-            return Result.Error(IllegalArgumentException("Mật khẩu quá ngắn"))
+            return Result.Error(IllegalArgumentException("Mật khẩu phải có ít nhất ${Constants.MIN_PASSWORD_LENGTH} ký tự"))
 
-        return repository.loginUser(email, password)
+        return authRepository.loginUser(email, password)
     }
 }

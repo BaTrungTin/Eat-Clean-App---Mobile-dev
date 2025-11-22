@@ -2,14 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
     alias(libs.plugins.kotlin.kapt)
-
 
 // hilt
     id("com.google.dagger.hilt.android")
 
-
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -85,7 +83,12 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0")
     implementation("androidx.compose.material:material-icons-extended")
 
-
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-database")
 
     // ===== Hilt =====
     implementation("com.google.dagger:hilt-android:2.52")

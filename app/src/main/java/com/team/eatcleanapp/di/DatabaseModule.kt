@@ -1,6 +1,6 @@
-package com.team.eatcleanapp.di
+package com.team.eatcleanapp.data.local.database
 
-import android.app.Application
+import android.content.Context
 import androidx.room.Room
 import com.team.eatcleanapp.data.local.AppDatabase
 import com.team.eatcleanapp.data.local.dao.DailyMenuDao
@@ -9,41 +9,39 @@ import com.team.eatcleanapp.data.local.dao.MealDao
 import com.team.eatcleanapp.data.local.dao.MealIntakeDao
 import com.team.eatcleanapp.data.local.dao.UserDao
 import com.team.eatcleanapp.util.Constants
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
-
-@Module
-@InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    @Provides
-    @Singleton
-    fun provideDatabase(app: Application): AppDatabase {
-        return Room.databaseBuilder(
-            app,
-            AppDatabase::class.java,
-            Constants.DATABASE_NAME
-        )
-        .fallbackToDestructiveMigration()
-        .build()
+    private var database: AppDatabase? = null
+
+    fun initialize(context: Context) {
+        if (database == null) {
+            database = Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                Constants.DATABASE_NAME
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+        }
     }
 
-    @Provides
-    fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
+    fun getDatabase(): AppDatabase {
+        return database ?: throw IllegalStateException("Database must be initialized first")
+    }
 
-    @Provides
-    fun provideMealDao(db: AppDatabase): MealDao = db.mealDao()
+    fun getUserDao(): UserDao = getDatabase().userDao()
 
-    @Provides
-    fun provideFavoriteDao(db: AppDatabase): FavoriteDao = db.favoriteDao()
+    fun getMealDao(): MealDao = getDatabase().mealDao()
 
-    @Provides
-    fun provideDailyMenuDao(db: AppDatabase): DailyMenuDao = db.dailyMenuDao()
+    fun getFavoriteDao(): FavoriteDao = getDatabase().favoriteDao()
 
-    @Provides
-    fun provideMealIntakeDao(db: AppDatabase): MealIntakeDao = db.mealIntakeDao()
+    fun getDailyMenuDao(): DailyMenuDao = getDatabase().dailyMenuDao()
+
+    fun getMealIntakeDao(): MealIntakeDao = getDatabase().mealIntakeDao()
+
+    fun closeDatabase() {
+        database?.close()
+        database = null
+    }
 }

@@ -2,36 +2,44 @@ package com.team.eatcleanapp.data.local.dao
 
 import androidx.room.*
 import com.team.eatcleanapp.data.local.entities.FavoriteEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavoriteDao {
-    
-    @Query("SELECT * FROM favorites WHERE userId = :userId ORDER BY createdAt DESC")
-    fun getAllFavoritesByUserId(userId: String): Flow<List<FavoriteEntity>>
-    
-    @Query("SELECT * FROM favorites WHERE userId = :userId AND mealId = :mealId LIMIT 1")
+    // thêm 1 món vào favorite
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFavorite(favorite: FavoriteEntity)
+
+    // lấy danh sách favorite của người dùng
+    @Query("SELECT * FROM favorites WHERE userId = :userId")
+    suspend fun getAllFavoritesByUserId(userId: String): List<FavoriteEntity>
+
+    // lấy 1 món yêu thích của người dùng theo mealid
+    @Query("SELECT * FROM favorites WHERE userId = :userId AND mealId = :mealId")
     suspend fun getFavoriteByMealId(userId: String, mealId: String): FavoriteEntity?
-    
-    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE userId = :userId AND mealId = :mealId)")
+
+    // kiểm tra trong ds favorite có món đó không
+    @Query("""
+        SELECT EXISTS(
+        SELECT 1 FROM favorites 
+        WHERE userId = :userId 
+        AND mealId = :mealId)
+    """)
     suspend fun isFavorite(userId: String, mealId: String): Boolean
-    
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addFavorite(favorite: FavoriteEntity)
-    
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addFavorites(favorites: List<FavoriteEntity>)
-    
+
+    // xóa 1 món cụ thể trong favorite
     @Query("DELETE FROM favorites WHERE userId = :userId AND mealId = :mealId")
-    suspend fun removeFavorite(userId: String, mealId: String)
-    
-    @Delete
-    suspend fun deleteFavorite(favorite: FavoriteEntity)
-    
+    suspend fun deleteFavorite(userId: String, mealId: String)
+
+    // xóa tất cả món yêu thích của người dùng
     @Query("DELETE FROM favorites WHERE userId = :userId")
     suspend fun deleteAllFavoritesByUserId(userId: String)
-    
+
+    // đếm số lượng món yêu thích của người dùng
     @Query("SELECT COUNT(*) FROM favorites WHERE userId = :userId")
-    suspend fun getFavoriteCount(userId: String): Int
+    suspend fun getCountByUserId(userId: String): Int
+
+    // cập nhật thông tin của món yêu thích
+    @Update
+    suspend fun update(favorite: FavoriteEntity)
 }
 

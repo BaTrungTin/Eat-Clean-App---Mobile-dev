@@ -1,11 +1,10 @@
 package com.team.eatcleanapp.domain.usecase.dailymenu
 
-import com.team.eatcleanapp.domain.model.DailyMenu
+import com.team.eatcleanapp.domain.model.dailymenu.DailyMenuItem
 import com.team.eatcleanapp.domain.repository.DailyMenuRepository
 import com.team.eatcleanapp.util.DateUtils
-import kotlinx.coroutines.flow.first
-import java.util.Calendar
-import java.util.Date
+import com.team.eatcleanapp.util.Result
+import java.util.*
 
 class GetWeeklyMenuUseCase(
     private val repository: DailyMenuRepository
@@ -13,41 +12,42 @@ class GetWeeklyMenuUseCase(
     suspend operator fun invoke(
         userId: String,
         date: Date
-    ): Map<Date, List<DailyMenu>> {
+    ): Result<Map<Date, List<DailyMenuItem>>> {
+        // Kiem tra
         if (userId.isBlank()) {
-            return emptyMap()
+            return Result.Error(IllegalArgumentException("User ID khong duoc de trong"))
         }
 
         return try {
-            val calendar = Calendar.getInstance()
-            calendar.time = date
-            
-            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-            val daysToMonday = when (dayOfWeek) {
-                Calendar.SUNDAY -> -6 
-                else -> Calendar.MONDAY - dayOfWeek 
+            // Lay tuan hop le tu DateUtils
+            val (startDate, endDate) = DateUtils.getValidWeekForDate(date)
+
+            // Kiem tra tinh hop le cua tuan
+            if (!DateUtils.isValidWeek(startDate, endDate)) {
+                return Result.Error(IllegalArgumentException("Tuan khong hop le"))
             }
-            calendar.add(Calendar.DAY_OF_YEAR, daysToMonday)
-            val startDate = DateUtils.getStartOfDay(calendar.time)
-            
-          
-            calendar.add(Calendar.DAY_OF_YEAR, 6)
-            val endDate = DateUtils.getEndOfDay(calendar.time)
-            
-         
-            val result = repository.getWeeklyMenu(userId, startDate).first()
-            val dailyMenus = when (result) {
-                is com.team.eatcleanapp.util.Result.Success -> result.data
-                else -> emptyList()
-            }
-            
-          
-            dailyMenus.groupBy { menu ->
-                DateUtils.getStartOfDay(menu.date)
+
+            // Lay thuc don tu repository
+            val result = repository.getDailyMenuByWeek(userId, startDate, endDate)
+
+            // Xu ly ket qua
+            when (result) {
+                is Result.Success -> {
+                    val weeklyMenus = processWeeklyMenus(result.data)
+                    Result.Success(weeklyMenus)
+                }
+                is Result.Error -> result
+                is Result.Loading -> Result.Error(IllegalStateException("Dang tai thuc don tuan"))
             }
         } catch (e: Exception) {
-            emptyMap()
+            Result.Error(e)
+        }
+    }
+
+    private fun processWeeklyMenus(dailyMenus: List<DailyMenuItem>): Map<Date, List<DailyMenuItem>> {
+        // Nhom thuc don theo ngay (su dung start of day de dam bao cung ngay)
+        return dailyMenus.groupBy { menu ->
+            DateUtils.getStartOfDay(menu.date)
         }
     }
 }
-

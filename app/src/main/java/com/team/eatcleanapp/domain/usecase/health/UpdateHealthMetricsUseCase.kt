@@ -9,44 +9,36 @@ import com.team.eatcleanapp.domain.repository.UserRepository
 import com.team.eatcleanapp.util.NutritionCalculator
 import com.team.eatcleanapp.util.Result
 
-// Use case cập nhật lại các chỉ số sức khỏe (BMI, BMR, TDEE) cho user
 class UpdateHealthMetricsUseCase(
     private val userRepository: UserRepository
 ) {
 
-    // tạo 1 data class để chứa các tham số cần thiết để cập nhật chỉ số sức khỏe
     data class Params(
         val userId: String,
-        val weightKg: Float,
-        val heightCm: Float,
+        val weightKg: Double,
+        val heightCm: Double,
         val age: Int,
         val gender: Gender,
         val activityLevel: ActivityLevel,
         val goal: Goal
     )
 
-    // Trả về Result<User> cho đúng với UserRepository.updateUser
     suspend operator fun invoke(params: Params): Result<User> {
-
-        // 1. Lấy user hiện tại theo id
         val currentUserResult = userRepository.getUserById(params.userId)
-
-        // Nếu không lấy được thì trả về lỗi
         if (currentUserResult is Result.Error) {
-            return Result.Error(currentUserResult.exception)
+            return currentUserResult
         }
 
         val currentUser = (currentUserResult as Result.Success).data
 
-        // 2. Tính toán BMI, BMR, TDEE
         val bmi = NutritionCalculator.calculateBmi(
-            weightKg = params.weightKg,
-            heightCm = params.heightCm
+            weightKg = params.weightKg.toFloat(),
+            heightCm = params.heightCm.toFloat()
         )
 
         val bmr = NutritionCalculator.calculateBmr(
-            weightKg = params.weightKg,
-            heightCm = params.heightCm,
+            weightKg = params.weightKg.toFloat(),
+            heightCm = params.heightCm.toFloat(),
             age = params.age,
             gender = params.gender
         )
@@ -56,17 +48,15 @@ class UpdateHealthMetricsUseCase(
             activityLevel = params.activityLevel
         )
 
-        // 3. Tạo HealthMetrics mới và cập nhật vào user
         val healthMetrics = HealthMetrics(
-            bmi = bmi,
-            bmr = bmr,
-            tdee = tdee
+            bmi = bmi.toDouble(),
+            bmr = bmr.toDouble(),
+            tdee = tdee.toDouble()
         )
 
-        // Tạo user đã được cập nhật chỉ số sức khỏe
-        val updatedUser: User = currentUser.copy(
-            weight = params.weightKg.toDouble(),
-            height = params.heightCm.toDouble(),
+        val updatedUser = currentUser.copy(
+            weight = params.weightKg,
+            height = params.heightCm,
             age = params.age,
             gender = params.gender,
             activityLevel = params.activityLevel,
@@ -74,7 +64,6 @@ class UpdateHealthMetricsUseCase(
             healthMetrics = healthMetrics
         )
 
-        // Cập nhật user
         return userRepository.updateUser(updatedUser)
     }
 }
