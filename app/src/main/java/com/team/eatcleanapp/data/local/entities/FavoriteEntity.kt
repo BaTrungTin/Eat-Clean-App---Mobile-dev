@@ -1,7 +1,6 @@
 package com.team.eatcleanapp.data.local.entities
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "favorites",
@@ -12,8 +11,7 @@ data class FavoriteEntity(
     val mealId: String,
     val mealName: String,
     val calories: Double,
-    val image: String,
-    val category: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val image: String?,
+    val createdAt: Long
 )
 

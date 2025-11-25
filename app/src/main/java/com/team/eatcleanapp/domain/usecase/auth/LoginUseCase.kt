@@ -1,26 +1,25 @@
 package com.team.eatcleanapp.domain.usecase.auth
 
-import com.team.eatcleanapp.domain.model.User
-import com.team.eatcleanapp.domain.repository.UserRepository
-import com.team.eatcleanapp.util.Result
+import com.team.eatcleanapp.domain.repository.AuthRepository
+import com.team.eatcleanapp.domain.utils.EmailValidator
 import com.team.eatcleanapp.util.Constants
+import com.team.eatcleanapp.util.Result
+import javax.inject.Inject
 
-class LoginUseCase(
-    private val repository: UserRepository
+class LoginUseCase @Inject constructor(
+    private val authRepository: AuthRepository
 ) {
-    suspend fun login(
-        email: String,
-        password: String
-    ): Result<User> {
-        if (email.isBlank() || password.isBlank())
-            return Result.Error(IllegalArgumentException("Email và mật khẩu không được để trống"))
+    suspend operator fun invoke(email: String, password: String): Result<com.google.firebase.auth.FirebaseUser> {
+        if (email.isBlank())
+            return Result.Error(message = "Email không được để trống")
+        if (password.isBlank())
+            return Result.Error(message = "Mật khẩu không được để trống")
+        if (password.length < Constants.MIN_PASSWORD_LENGTH) {
+            return Result.Error(message = "Mật khẩu phải có ít nhất ${Constants.MIN_PASSWORD_LENGTH} ký tự")
+        }
+        if (!EmailValidator.isValid(email))
+            return Result.Error(message = "Email không đúng định dạng")
 
-        if (email.length < Constants.MIN_EMAIL_LENGTH || !email.contains("@"))
-            return Result.Error(IllegalArgumentException("Email không hợp lệ"))
-
-        if (password.length < Constants.MIN_PASSWORD_LENGTH)
-            return Result.Error(IllegalArgumentException("Mật khẩu quá ngắn"))
-
-        return repository.loginUser(email, password)
+        return authRepository.loginWithEmailAndPassword(email, password)
     }
 }

@@ -1,42 +1,32 @@
 package com.team.eatcleanapp.domain.usecase.dailymenu
 
+import com.team.eatcleanapp.domain.model.enums.MealCategory
 import com.team.eatcleanapp.domain.repository.DailyMenuRepository
 import com.team.eatcleanapp.util.Result
 import java.util.Date
 import javax.inject.Inject
 
-
 class DeleteDayMenuUseCase @Inject constructor(
     private val dailyMenuRepository: DailyMenuRepository
 ) {
-
     /**
-     * Data class để chứa các tham số đầu vào cho UseCase.
+     * Xóa thực đơn theo ngày và buổi ăn
+     * @param userId ID người dùng
+     * @param dateMealTypes Map với:
+     * - Key: Ngày cần xóa
+     * - Value: Danh sách buổi ăn cần xóa
+     *   + listOf(MealCategory.BREAKFAST) → xóa buổi sáng
+     *   + listOf(MealCategory.LUNCH, MealCategory.DINNER) → xóa buổi trưa và tối
+     *   + null → xóa toàn bộ ngày
      */
-    data class Params(
-        val userId: String,
-        val date: Date,
-        val isConfirmed: Boolean // Cờ xác nhận từ người dùng
-    )
-
-    /**
-     * @param params Các tham số cần thiết, bao gồm cả cờ xác nhận.
-     * @return Trả về Result.Success(Unit) nếu xóa thành công, hoặc Result.Error nếu có lỗi hoặc hành động bị hủy.
-     */
-    suspend operator fun invoke(params: Params): Result<Unit> {
-        //  Kiểm tra logic nghiệp vụ: Người dùng đã thực sự xác nhận chưa?
-        if (!params.isConfirmed) {
-            // Nếu chưa, trả về một lỗi đặc biệt để ViewModel có thể xử lý.
-            return Result.Error(ActionCancelledException("Hành động xóa đã bị người dùng hủy bỏ."))
+    suspend operator fun invoke(
+        userId: String,
+        dateMealTypes: Map<Date, List<MealCategory>?>
+    ): Result<Unit> {
+        if (dateMealTypes.isEmpty()) {
+            return Result.Error(message = "Danh sách ngày và buổi ăn không được để trống")
         }
 
-        // Nếu đã xác nhận, gọi xuống repository để thực hiện xóa.
-        // Vì hàm repository đã trả về Result<Unit>, chúng ta có thể trả về trực tiếp kết quả của nó.
-        return dailyMenuRepository.deleteAllMealsByDate(
-            userId = params.userId,
-            date = params.date
-        )
+        return dailyMenuRepository.deleteMeals(userId, dateMealTypes)
     }
 }
-
-class ActionCancelledException(message: String) : Exception(message)

@@ -3,18 +3,13 @@ package com.team.eatcleanapp.di
 import android.app.Application
 import androidx.room.Room
 import com.team.eatcleanapp.data.local.AppDatabase
-import com.team.eatcleanapp.data.local.dao.DailyMenuDao
-import com.team.eatcleanapp.data.local.dao.FavoriteDao
-import com.team.eatcleanapp.data.local.dao.MealDao
-import com.team.eatcleanapp.data.local.dao.MealIntakeDao
-import com.team.eatcleanapp.data.local.dao.UserDao
+import com.team.eatcleanapp.data.local.dao.*
 import com.team.eatcleanapp.util.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -28,8 +23,8 @@ object DatabaseModule {
             AppDatabase::class.java,
             Constants.DATABASE_NAME
         )
-        .fallbackToDestructiveMigration()
-        .build()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
@@ -46,4 +41,7 @@ object DatabaseModule {
 
     @Provides
     fun provideMealIntakeDao(db: AppDatabase): MealIntakeDao = db.mealIntakeDao()
+
+    @Provides
+    fun provideMealOverrideDao(db: AppDatabase): MealOverrideDao = db.mealOverrideDao()
 }

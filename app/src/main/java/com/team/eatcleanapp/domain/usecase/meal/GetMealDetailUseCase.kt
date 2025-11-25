@@ -1,6 +1,6 @@
 package com.team.eatcleanapp.domain.usecase.meal
 
-import com.team.eatcleanapp.domain.model.Meal
+import com.team.eatcleanapp.domain.model.meal.Meal
 import com.team.eatcleanapp.domain.repository.MealRepository
 import com.team.eatcleanapp.util.Result
 import javax.inject.Inject
@@ -9,15 +9,14 @@ class GetMealDetailUseCase @Inject constructor(
     private val mealRepository: MealRepository
 ) {
     suspend operator fun invoke(mealId: String): Result<Meal?> {
-        if (mealId.isBlank()) {
-            return Result.Error(IllegalArgumentException("Meal ID không được để trống"))
-        }
+        return mealRepository.getMealDetail(mealId)
+    }
 
-        return try {
-            val meal = mealRepository.getMealDetail(mealId)
-            Result.Success(meal)
-        } catch (e: Exception) {
-            Result.Error(e)
-        }
+    suspend operator fun invoke(mealIds: List<String>): Result<List<Meal>> {
+        return mealRepository.getMealsByIds(mealIds)
+    }
+
+    suspend fun checkExists(mealId: String): Result<Boolean> {
+        return mealRepository.mealExists(mealId)
     }
 }

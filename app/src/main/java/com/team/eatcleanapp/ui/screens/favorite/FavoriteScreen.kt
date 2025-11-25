@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -27,81 +26,116 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.team.eatcleanapp.R
-import com.team.eatcleanapp.domain.model.Meal
+import com.team.eatcleanapp.domain.model.meal.Favorite
 import com.team.eatcleanapp.ui.navigation.Screen
 import com.team.eatcleanapp.ui.theme.JungleGreen
 import kotlin.math.roundToInt
+import com.team.eatcleanapp.util.Result
+import com.team.eatcleanapp.ui.components.CommonTopBar
 
 @Composable
 fun FavoriteScreen(
     navController: NavController,
-    viewModel: FavoriteViewModel = hiltViewModel()
+    userId: String,
+    viewModel: FavoriteViewModel = hiltViewModel(),
+    onMenuClick: () -> Unit = {}
 ) {
-    val favoriteMeals by viewModel.favoriteMeals.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val favoritesState by viewModel.favorites.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadFavoriteMeals()
+    LaunchedEffect(userId) {
+        viewModel.getFavorites(userId)
+    }
+    
+    LaunchedEffect(viewModel.toggleFavoriteState.collectAsState().value) {
+        when (val state = viewModel.toggleFavoriteState.value) {
+            is Result.Success -> {
+                if (state.data == false) {
+                    viewModel.getFavorites(userId)
+                }
+                viewModel.resetToggleState()
+            }
+            is Result.Error -> {
+                viewModel.resetToggleState()
+            }
+            else -> {}
+        }
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Header
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+        CommonTopBar(onMenuClick = onMenuClick)
+        
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(16.dp)
         ) {
-             // Menu Icon (Placeholder)
-             Icon(
-                painter = painterResource(R.drawable.ic_launcher_foreground), // Replace with your menu icon resource
-                contentDescription = "Menu",
-                tint = JungleGreen,
-                modifier = Modifier.size(32.dp).clickable { /* Open Drawer */ }
+            Text(
+                "Món ăn yêu thích",
+                style = MaterialTheme.typography.titleLarge,
+                color = JungleGreen,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // Avatar (Placeholder)
-             Icon(
-                painter = painterResource(R.drawable.ic_launcher_foreground), // Replace with your avatar resource
-                contentDescription = "Avatar",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.LightGray)
-            )
-        }
-
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = JungleGreen)
-            }
-        } else {
-            if (favoriteMeals.isEmpty()) {
+            when (favoritesState) {
+            is Result.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Bạn chưa có món ăn yêu thích nào", color = Color.Gray)
+                    CircularProgressIndicator(color = JungleGreen)
                 }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(favoriteMeals) { meal ->
-                        FavoriteMealItem(
-                            meal = meal, 
-                            onClick = {
-                                navController.navigate(Screen.MealDetail.createRoute(meal.id))
-                            },
-                            onFavoriteClick = {
-                                viewModel.removeFavorite(meal.id)
-                            }
-                        )
+            }
+            is Result.Success<*> -> {
+                val favorites = when (val state = favoritesState) {
+                    is Result.Success<List<Favorite>> -> state.data
+                    else -> emptyList()
+                }
+                if (favorites.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Filled.Favorite,
+                                contentDescription = "No favorites",
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "Bạn chưa có món ăn yêu thích nào",
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(favorites) { favorite ->
+                            FavoriteMealItem(
+                                favorite = favorite,
+                                onClick = {
+                                    navController.navigate(Screen.MealDetail.createRoute(favorite.mealId))
+                                },
+                                onFavoriteClick = {
+                                    viewModel.toggleFavorite(userId, favorite.mealId)
+                                }
+                            )
+                        }
                     }
                 }
+            }
+            is Result.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        "Có lỗi xảy ra khi tải dữ liệu",
+                        color = Color.Red
+                    )
+                }
+            }
+            else -> {}
             }
         }
     }
@@ -109,7 +143,7 @@ fun FavoriteScreen(
 
 @Composable
 fun FavoriteMealItem(
-    meal: Meal, 
+    favorite: Favorite,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
@@ -133,10 +167,10 @@ fun FavoriteMealItem(
             ) {
                  AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(meal.image)
+                        .data(favorite.image)
                         .crossfade(true)
                         .build(),
-                    contentDescription = meal.name,
+                    contentDescription = favorite.mealName,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                     placeholder = painterResource(R.drawable.ic_launcher_background),
@@ -152,7 +186,7 @@ fun FavoriteMealItem(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = meal.name,
+                    text = favorite.mealName,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = JungleGreen,
@@ -163,7 +197,7 @@ fun FavoriteMealItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 
                  Text(
-                    text = "${meal.totalCalories.roundToInt()} kcal",
+                    text = "${favorite.calories.roundToInt()} kcal",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )

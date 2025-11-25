@@ -8,11 +8,10 @@ import androidx.room.PrimaryKey
     tableName = "users",
     indices = [Index(value = ["email"], unique = true)]
 )
-class UserEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+data class UserEntity(
+    @PrimaryKey
+    val id: String,
     val email: String,
-    val password: String,
     val name: String,
     val weight: Double,
     val height: Double,
@@ -21,6 +20,9 @@ class UserEntity(
     val activityMinutesPerDay: Int,
     val activityDaysPerWeek: Int,
     val activityLevel: String,  // SEDENTARY, LIGHTLY_ACTIVE, MODERATELY_ACTIVE, VERY_ACTIVE, EXTRA_ACTIVE
-    val goal: String,   //LOSE_WEIGHT, MAINTAIN_WEIGHT, GAIN_WEIGHT
-    val avatarUrl: String? = null
+    val goal: String,
+    val avatarUrl: String? = null,
+    val healthMetrics: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )

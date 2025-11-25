@@ -1,80 +1,46 @@
 package com.team.eatcleanapp.domain.usecase.health
 
-import com.team.eatcleanapp.domain.model.ActivityLevel
-import com.team.eatcleanapp.domain.model.Gender
-import com.team.eatcleanapp.domain.model.Goal
-import com.team.eatcleanapp.domain.model.HealthMetrics
-import com.team.eatcleanapp.domain.model.User
+import com.team.eatcleanapp.domain.model.user.HealthMetrics
+import com.team.eatcleanapp.domain.model.user.User
 import com.team.eatcleanapp.domain.repository.UserRepository
-import com.team.eatcleanapp.util.NutritionCalculator
+import com.team.eatcleanapp.domain.utils.NutritionCalculator
 import com.team.eatcleanapp.util.Result
+import javax.inject.Inject
 
-// Use case cập nhật lại các chỉ số sức khỏe (BMI, BMR, TDEE) cho user
-class UpdateHealthMetricsUseCase(
+class UpdateHealthMetricsUseCase @Inject constructor(
     private val userRepository: UserRepository
 ) {
+    suspend operator fun invoke(user: User): Result<User> {
+        val healthMetrics = calculateHealthMetrics(user)
+        val updatedUser = user.copy(
+            healthMetrics = healthMetrics,
+            updatedAt = System.currentTimeMillis()
+        )
 
-    // tạo 1 data class để chứa các tham số cần thiết để cập nhật chỉ số sức khỏe
-    data class Params(
-        val userId: String,
-        val weightKg: Float,
-        val heightCm: Float,
-        val age: Int,
-        val gender: Gender,
-        val activityLevel: ActivityLevel,
-        val goal: Goal
-    )
-
-    // Trả về Result<User> cho đúng với UserRepository.updateUser
-    suspend operator fun invoke(params: Params): Result<User> {
-
-        // 1. Lấy user hiện tại theo id
-        val currentUserResult = userRepository.getUserById(params.userId)
-
-        // Nếu không lấy được thì trả về lỗi
-        if (currentUserResult is Result.Error) {
-            return Result.Error(currentUserResult.exception)
+        return userRepository.updateUser(updatedUser).let { updateResult ->
+            if (updateResult.isSuccess) {
+                Result.Success(updatedUser)
+            } else {
+                Result.Error(message = updateResult.errorMessage())
+            }
         }
+    }
 
-        val currentUser = (currentUserResult as Result.Success).data
-
-        // 2. Tính toán BMI, BMR, TDEE
+    private fun calculateHealthMetrics(user: User): HealthMetrics {
         val bmi = NutritionCalculator.calculateBmi(
-            weightKg = params.weightKg,
-            heightCm = params.heightCm
-        )
-
+            user.weight.toFloat(),
+            user.height.toFloat())
         val bmr = NutritionCalculator.calculateBmr(
-            weightKg = params.weightKg,
-            heightCm = params.heightCm,
-            age = params.age,
-            gender = params.gender
-        )
-
+            user.weight.toFloat(),
+            user.height.toFloat(), user.age, user.gender)
         val tdee = NutritionCalculator.calculateTdee(
-            bmr = bmr,
-            activityLevel = params.activityLevel
-        )
+            bmr,
+            user.activityLevel)
 
-        // 3. Tạo HealthMetrics mới và cập nhật vào user
-        val healthMetrics = HealthMetrics(
+        return HealthMetrics(
             bmi = bmi,
             bmr = bmr,
             tdee = tdee
         )
-
-        // Tạo user đã được cập nhật chỉ số sức khỏe
-        val updatedUser: User = currentUser.copy(
-            weight = params.weightKg.toDouble(),
-            height = params.heightCm.toDouble(),
-            age = params.age,
-            gender = params.gender,
-            activityLevel = params.activityLevel,
-            goal = params.goal,
-            healthMetrics = healthMetrics
-        )
-
-        // Cập nhật user
-        return userRepository.updateUser(updatedUser)
     }
 }

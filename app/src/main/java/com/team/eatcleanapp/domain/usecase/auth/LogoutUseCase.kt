@@ -1,15 +1,13 @@
 package com.team.eatcleanapp.domain.usecase.auth
 
+import com.team.eatcleanapp.domain.repository.AuthRepository
 import com.team.eatcleanapp.util.Result
+import javax.inject.Inject
 
-class LogoutUseCase {
-    suspend fun execute(): Result<Unit> {
-        return try {
-            // Clear user session
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e)
-        }
+class LogoutUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(): Result<Unit> {
+        return authRepository.logout()
     }
 }
-

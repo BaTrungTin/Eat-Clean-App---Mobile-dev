@@ -1,39 +1,54 @@
 package com.team.eatcleanapp.domain.usecase.auth
 
-import com.team.eatcleanapp.domain.model.User
+import com.team.eatcleanapp.domain.model.user.User
+import com.team.eatcleanapp.domain.repository.AuthRepository
 import com.team.eatcleanapp.domain.repository.UserRepository
-import com.team.eatcleanapp.util.Result
+import com.team.eatcleanapp.domain.utils.EmailValidator
 import com.team.eatcleanapp.util.Constants
+import com.team.eatcleanapp.util.Result
+import javax.inject.Inject
 
-class RegisterUseCase(
-    private val repository: UserRepository
+class RegisterUseCase @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) {
-    suspend fun register(
-        user: User,
-        confirmPassword: String
-    ): Result<User> {
-        if (user.email.isBlank() || user.password.isBlank() || confirmPassword.isBlank() || user.name.isBlank())
-            return Result.Error(IllegalArgumentException("Vui long dien day du thong tin"))
+    suspend operator fun invoke(
+        name: String, email: String, password: String, confirmPassword: String
+    ): Result<com.google.firebase.auth.FirebaseUser> {
+        validateRegistrationData(name, email, password, confirmPassword)?.let {
+            return Result.Error(message = it)
+        }
 
-        if (user.email.length < Constants.MIN_EMAIL_LENGTH || !user.email.contains("@"))
-            return Result.Error(IllegalArgumentException("Email khong hop le"))
+        val emailCheck = authRepository.isEmailAlreadyInUse(email)
+        if (emailCheck.isSuccess && emailCheck.getOrThrow() == true) {
+            return Result.Error(message = "Email này đã được sử dụng")
+        }
 
-        if (user.password.length < Constants.MIN_PASSWORD_LENGTH)
-            return Result.Error(IllegalArgumentException("Mat khau phai co it nhat ${Constants.MIN_PASSWORD_LENGTH} ky tu"))
+        val registerResult = authRepository.registerWithEmailAndPassword(email, password)
+        if (registerResult.isError) return registerResult
 
-        if (user.password != confirmPassword)
-            return Result.Error(IllegalArgumentException("Mat khau xac nhan khong trung khop"))
+        val firebaseUser = registerResult.getOrThrow()
+        val user = User(id = firebaseUser.uid, email = email, name = name, createdAt = System.currentTimeMillis())
 
-        if (user.name.length > Constants.MAX_NAME_LENGTH)
-            return Result.Error(IllegalArgumentException("Ten khong duoc qua ${Constants.MAX_NAME_LENGTH} ky tu"))
+        val saveResult = userRepository.saveUser(user)
+        return if (saveResult.isSuccess) {
+            Result.Success(firebaseUser)
+        } else {
+            authRepository.deleteAccount()
+            Result.Error(message = saveResult.errorMessage())
+        }
+    }
 
-        val checkEmail = repository.checkEmailExists(user.email)
-        if (checkEmail is Result.Error)
-            return checkEmail
-        if (checkEmail is Result.Success && checkEmail.data)
-            return Result.Error(IllegalArgumentException("Email đã được sử dụng"))
-
-        val userToRegister = user.copy(id = "")
-        return repository.registerUser(userToRegister)
+    private fun validateRegistrationData(
+        name: String, email: String, password: String, confirmPassword: String
+    ): String? = when {
+        name.isBlank() -> "Họ tên không được để trống"
+        email.isBlank() -> "Email không được để trống"
+        password.isBlank() -> "Mật khẩu không được để trống"
+        confirmPassword.isBlank() -> "Xác nhận mật khẩu không được để trống"
+        password != confirmPassword -> "Mật khẩu xác nhận không khớp"
+        password.length < Constants.MIN_PASSWORD_LENGTH -> "Mật khẩu phải có ít nhất ${Constants.MIN_PASSWORD_LENGTH} ký tự"
+        !EmailValidator.isValid(email) -> "Email không đúng định dạng"
+        else -> null
     }
 }

@@ -1,13 +1,7 @@
 package com.team.eatcleanapp.di
 
-import com.team.eatcleanapp.data.repository.DailyMenuRepositoryImpl
-import com.team.eatcleanapp.data.repository.FavoriteRepositoryImpl
-import com.team.eatcleanapp.data.repository.MealRepositoryImpl
-import com.team.eatcleanapp.data.repository.UserRepositoryImpl
-import com.team.eatcleanapp.domain.repository.DailyMenuRepository
-import com.team.eatcleanapp.domain.repository.FavoriteRepository
-import com.team.eatcleanapp.domain.repository.MealRepository
-import com.team.eatcleanapp.domain.repository.UserRepository
+import com.team.eatcleanapp.data.repository.*
+import com.team.eatcleanapp.domain.repository.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -41,4 +35,22 @@ abstract class RepositoryModule {
     abstract fun bindMealRepository(
         mealRepositoryImpl: MealRepositoryImpl
     ): MealRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMealIntakeRepository(
+        mealIntakeRepositoryImpl: MealIntakeRepositoryImpl
+    ): MealIntakeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMealOverrideRepository(
+        mealOverrideRepositoryImpl: MealOverrideRepositoryImpl
+    ): MealOverrideRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        authRepositoryImpl: AuthRepositoryImpl
+    ): AuthRepository
 }

@@ -1,75 +1,65 @@
 package com.team.eatcleanapp.domain.usecase.dailymenu
 
-
-import com.team.eatcleanapp.domain.model.MealCategory
+import com.team.eatcleanapp.domain.model.dailymenu.DailyMenuItem
+import com.team.eatcleanapp.domain.model.enums.MealCategory
 import com.team.eatcleanapp.domain.repository.DailyMenuRepository
 import com.team.eatcleanapp.domain.repository.MealRepository
 import com.team.eatcleanapp.util.Result
 import java.util.Date
 import javax.inject.Inject
 
-
-class AddMealsToDayUseCase @Inject constructor(
+class AddMealToDailyMenuUseCase @Inject constructor(
     private val dailyMenuRepository: DailyMenuRepository,
     private val mealRepository: MealRepository
 ) {
+    suspend operator fun invoke(
+        userId: String,
+        date: Date,
+        mealId: String,
+        mealType: MealCategory,
+        portionSize: Double = 1.0
+    ): Result<Unit> {
+        if (portionSize <= 0) return Result.Error(message = "Khẩu phần phải lớn hơn 0")
+        if (portionSize > 10) return Result.Error(message = "Khẩu phần quá lớn")
 
-    data class Params(
-        val userId: String,
-        val date: Date,
-        val mealIds: List<String>,
-        val mealCategory: MealCategory
-    )
+        // Normalize date to start of day to ensure consistency with delete operations
+        val calendar = java.util.Calendar.getInstance().apply {
+            time = date
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        val normalizedDate = calendar.time
+        
+        android.util.Log.d("AddMealToDailyMenuUseCase", "Adding meal: userId=$userId, originalDate=${date.time}, normalizedDate=${normalizedDate.time}, mealId=$mealId, mealType=$mealType, portionSize=$portionSize")
 
-    suspend operator fun invoke(params: Params): Result<Unit> {
-        // 1. Validate input cơ bản
-        if (params.mealIds.isEmpty()) {
-            return Result.Error(
-                IllegalArgumentException("Danh sách món ăn không được để trống")
-            )
+        val existsResult = dailyMenuRepository.mealExistsInMenu(userId, normalizedDate, mealId, mealType)
+        if (existsResult.isSuccess && existsResult.getOrThrow() == true) {
+            android.util.Log.w("AddMealToDailyMenuUseCase", "Meal already exists in menu")
+            return Result.Error(message = "Món ăn đã tồn tại trong thực đơn")
         }
 
-        // 2. Lấy chi tiết từng món -> build list MealToAdd
-        val mealsToAdd = mutableListOf<DailyMenuRepository.MealToAdd>()
-
-        for (mealId in params.mealIds) {
-            // Giả sử getMealDetail trả về Meal?
-            val meal = mealRepository.getMealDetail(mealId)
-
-            if (meal == null) {
-                // Nếu một món không tìm thấy -> fail luôn, không thêm dở dang
-                return Result.Error(
-                    IllegalStateException("Không tìm thấy món ăn với ID: $mealId")
-                )
-            }
-
-            // Nếu meal.id là String thì gán cho id, ngược lại gán cho null
-            val id = meal.id ?: return Result.Error(
-                IllegalStateException("Món ăn $mealId không có id hợp lệ")
-            )
-
-            mealsToAdd.add(
-                DailyMenuRepository.MealToAdd(
-                    mealId = id,
-                    mealName = meal.name,
-                    calories = meal.totalCalories, // Sửa thành totalCalories vì class Meal không còn trường calories trực tiếp
-                    mealType = params.mealCategory.name,
-                    protein = meal.totalProtein,   // Lấy giá trị từ Meal mới
-                    carbs = meal.totalCarbs,       // Lấy giá trị từ Meal mới
-                    fat = meal.totalFat            // Lấy giá trị từ Meal mới
-                )
-            )
+        val mealResult = mealRepository.getMealDetail(mealId)
+        if (mealResult.isError || mealResult.getOrNull() == null) {
+            android.util.Log.e("AddMealToDailyMenuUseCase", "Meal not found: $mealId")
+            return Result.Error(message = "Không tìm thấy món ăn")
         }
 
-        // 3. Gọi repository để thêm tất cả món đã chuẩn bị
-        return when (val repoResult = dailyMenuRepository.addMealsToDailyMenu(
-            userId = params.userId,
-            date = params.date,
-            meals = mealsToAdd
-        )) {
-            is Result.Success -> Result.Success(Unit)
-            is Result.Error   -> Result.Error(repoResult.exception)
-            is Result.Loading -> Result.Loading
-        }
+        val meal = mealResult.getOrThrow()!!
+        val dailyMenuItem = DailyMenuItem(
+            userId = userId,
+            date = normalizedDate, // Use normalized date to ensure consistency
+            mealId = mealId,
+            mealName = meal.name,
+            calories = meal.calories,
+            mealType = mealType,
+            portionSize = portionSize
+        )
+
+        android.util.Log.d("AddMealToDailyMenuUseCase", "Inserting meal: date=${dailyMenuItem.date.time}, mealName=${dailyMenuItem.mealName}")
+        val result = dailyMenuRepository.insertDailyMenus(listOf(dailyMenuItem))
+        android.util.Log.d("AddMealToDailyMenuUseCase", "Insert result: isSuccess=${result.isSuccess}")
+        return result
     }
 }

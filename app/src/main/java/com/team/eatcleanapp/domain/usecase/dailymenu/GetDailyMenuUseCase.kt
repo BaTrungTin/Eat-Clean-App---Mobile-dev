@@ -1,30 +1,40 @@
 package com.team.eatcleanapp.domain.usecase.dailymenu
 
-import com.team.eatcleanapp.domain.model.DailyMenu
+import com.team.eatcleanapp.domain.model.dailymenu.DailyMenuDay
+import com.team.eatcleanapp.domain.model.dailymenu.DailyMenuItem
+import com.team.eatcleanapp.domain.model.enums.MealCategory
 import com.team.eatcleanapp.domain.repository.DailyMenuRepository
-import kotlinx.coroutines.flow.first
+import com.team.eatcleanapp.util.Result
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.Date
+import javax.inject.Inject
 
-class GetDailyMenuUseCase(
-    private val repository: DailyMenuRepository
+class GetDailyMenuUseCase @Inject constructor(
+    private val dailyMenuRepository: DailyMenuRepository
 ) {
-    suspend operator fun invoke(
-        userId: String,
-        date: Date
-    ): List<DailyMenu> {
-        if (userId.isBlank()) {
-            return emptyList()
-        }
-
-        return try {
-            val result = repository.getDailyMenu(userId, date).first()
-            when (result) {
-                is com.team.eatcleanapp.util.Result.Success -> result.data
-                else -> emptyList()
+    operator fun invoke(userId: String, date: Date): Flow<Result<DailyMenuDay>> {
+        return dailyMenuRepository.getDailyMenuByDate(userId, date).map { repositoryResult ->
+            when (repositoryResult) {
+                is Result.Success -> {
+                    val meals = repositoryResult.data
+                    val dailyMenuDay = organizeMealsByType(date, meals)
+                    Result.Success(dailyMenuDay)
+                }
+                is Result.Error -> Result.Error(
+                    exception = repositoryResult.exception,
+                    message = repositoryResult.message
+                )
+                is Result.Loading -> Result.Loading
+                is Result.Idle -> Result.Idle
             }
-        } catch (e: Exception) {
-            emptyList()
         }
     }
-}
 
+    private fun organizeMealsByType(date: Date, meals: List<DailyMenuItem>): DailyMenuDay {
+        val breakfast = meals.filter { it.mealType == MealCategory.BREAKFAST }
+        val lunch = meals.filter { it.mealType == MealCategory.LUNCH }
+        val dinner = meals.filter { it.mealType == MealCategory.DINNER }
+        return DailyMenuDay(date = date, breakfast = breakfast, lunch = lunch, dinner = dinner)
+    }
+}

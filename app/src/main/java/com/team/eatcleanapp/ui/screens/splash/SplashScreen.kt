@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -22,7 +26,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.team.eatcleanapp.R
+import com.team.eatcleanapp.ui.screens.profile.UserViewModel
+import com.team.eatcleanapp.util.Result
 
 private val BgLight   = Color(0xFFE7F5EC)
 private val GreenDark = Color(0xFF3C9E6B)
@@ -52,7 +59,53 @@ fun Corner(
 }
 
 @Composable
-fun SplashScreen(onStart: () -> Unit) {
+fun SplashScreen(
+    onStart: () -> Unit,
+    onUserLoggedIn: (String) -> Unit = {},
+    skipAutoLogin: Boolean = false,
+    userViewModel: UserViewModel = hiltViewModel()
+) {
+    val currentUserState by userViewModel.currentUser.collectAsState()
+    
+    // Tự động kiểm tra user đã đăng nhập khi SplashScreen load (chỉ khi không skip)
+    LaunchedEffect(Unit) {
+        if (!skipAutoLogin) {
+            userViewModel.getCurrentUser()
+        } else {
+            // Nếu đang logout, không kiểm tra user, navigate đến Login ngay
+            android.util.Log.d("SplashScreen", "Skipping auto login check, navigating to Login")
+            onStart()
+        }
+    }
+    
+    // Xử lý kết quả kiểm tra user (chỉ khi không skip)
+    LaunchedEffect(currentUserState) {
+        if (skipAutoLogin) return@LaunchedEffect
+        
+        when (val state = currentUserState) {
+            is Result.Success -> {
+                val user = state.data
+                if (user != null) {
+                    // User đã đăng nhập, navigate đến Home với userId
+                    android.util.Log.d("SplashScreen", "User already logged in: ${user.id}")
+                    onUserLoggedIn(user.id)
+                } else {
+                    // Không có user đăng nhập, navigate đến Login
+                    android.util.Log.d("SplashScreen", "No user logged in, navigating to Login")
+                    onStart()
+                }
+            }
+            is Result.Error -> {
+                // Có lỗi, navigate đến Login
+                android.util.Log.e("SplashScreen", "Error checking user: ${state.message}")
+                onStart()
+            }
+            else -> {
+                // Đang loading, chờ kết quả
+            }
+        }
+    }
+    
     Box(
         modifier = Modifier
             .fillMaxSize()

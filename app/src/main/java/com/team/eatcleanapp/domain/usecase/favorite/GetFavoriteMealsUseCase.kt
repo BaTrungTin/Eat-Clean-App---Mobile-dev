@@ -1,27 +1,24 @@
 package com.team.eatcleanapp.domain.usecase.favorite
 
-import com.team.eatcleanapp.domain.model.Meal
+import com.team.eatcleanapp.domain.model.meal.Favorite
 import com.team.eatcleanapp.domain.repository.FavoriteRepository
-import kotlinx.coroutines.flow.first
+import com.team.eatcleanapp.util.Result
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetFavoriteMealsUseCase @Inject constructor(
-    private val repository: FavoriteRepository
+    private val favoriteRepository: FavoriteRepository
 ) {
-    suspend operator fun invoke(userId: String): List<Meal> {
-        if (userId.isBlank()) {
-            return emptyList()
-        }
-
-        return try {
-            val result = repository.getFavorites(userId).first()
+    operator fun invoke(userId: String): Flow<Result<List<Favorite>>> {
+        return favoriteRepository.getFavorites(userId).map { result ->
             when (result) {
-                is com.team.eatcleanapp.util.Result.Success -> result.data
-                else -> emptyList()
+                is Result.Success -> {
+                    val sortedFavorites = result.data.sortedByDescending { it.createdAt }
+                    Result.Success(sortedFavorites)
+                }
+                else -> result
             }
-        } catch (e: Exception) {
-            emptyList()
         }
     }
 }

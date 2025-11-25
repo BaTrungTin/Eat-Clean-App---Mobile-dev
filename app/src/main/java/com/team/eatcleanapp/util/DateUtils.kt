@@ -6,138 +6,137 @@ import java.util.Date
 import java.util.Locale
 
 object DateUtils {
-    private val dateFormat = SimpleDateFormat(Constants.DATE_FORMAT, Locale.getDefault())
-    private val dateTimeFormat = SimpleDateFormat(Constants.DATE_TIME_FORMAT, Locale.getDefault())
-    private val timeFormat = SimpleDateFormat(Constants.TIME_FORMAT, Locale.getDefault())
-    
-    /**
-     * Format date to string with format: yyyy-MM-dd
-     */
-    fun formatDate(date: Date): String {
-        return dateFormat.format(date)
+    private val dateFormatDDMMYYYY = SimpleDateFormat(Constants.DATE_FORMAT_DD_MM_YYYY, Constants.DEFAULT_LOCALE)
+    private val dateFormatDDTHGMM = SimpleDateFormat(Constants.DATE_FORMAT_DD_THG_MM, Constants.DEFAULT_LOCALE)
+    private val dateFormatEEEDDMM = SimpleDateFormat(Constants.DATE_FORMAT_EEE_DD_MM, Constants.DEFAULT_LOCALE)
+    private val dateFormatEEEE = SimpleDateFormat(Constants.DATE_FORMAT_DAY_FULL, Constants.DEFAULT_LOCALE)
+
+    // Format date dinh dang: 10/11/2025
+    fun formatDateDDMMYYYY(date: Date): String {
+        return dateFormatDDMMYYYY.format(date)
     }
-    
-    /**
-     * Format date and time to string with format: yyyy-MM-dd HH:mm:ss
-     */
-    fun formatDateTime(date: Date): String {
-        return dateTimeFormat.format(date)
+
+    // Format date dinh dang: 10 thg 11
+    fun formatDateDDTHGMM(date: Date): String {
+        return dateFormatDDTHGMM.format(date)
     }
-    
-    /**
-     * Format time to string with format: HH:mm
-     */
-    fun formatTime(date: Date): String {
-        return timeFormat.format(date)
+
+    // Format date dinh dang: T2, 10/11
+    fun formatDateEEEDDMM(date: Date): String {
+        return dateFormatEEEDDMM.format(date)
     }
-    
-    /**
-     * Parse string to date from format: yyyy-MM-dd
-     */
-    fun parseDate(dateString: String): Date? {
+
+    // Format date dinh dang: Thu hai
+    fun formatDateEEEE(date: Date): String {
+        return dateFormatEEEE.format(date)
+    }
+
+    // Format string sang date tu dinh dang: 10/11/2025
+    fun parseDateDDMMYYYY(dateString: String): Date? {
         return try {
-            dateFormat.parse(dateString)
+            dateFormatDDMMYYYY.parse(dateString)
         } catch (e: Exception) {
             null
         }
     }
-    
-    /**
-     * Parse string to date from format: yyyy-MM-dd HH:mm:ss
-     */
-    fun parseDateTime(dateTimeString: String): Date? {
-        return try {
-            dateTimeFormat.parse(dateTimeString)
-        } catch (e: Exception) {
-            null
-        }
-    }
-    
-    /**
-     * Get current date
-     */
+
+    // Lấy ngày hiện tại
     fun getCurrentDate(): Date {
         return Date()
     }
-    
-    /**
-     * Get today's date at start of day (00:00:00)
-     */
-    fun getTodayStart(): Date {
+
+    // Lay thoi gian bat dau cua ngay (00:00:00)
+    fun getStartOfDay(date: Date): Date {
         val calendar = Calendar.getInstance()
+        calendar.time = date
+
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
+
         return calendar.time
     }
-    
-    /**
-     * Get today's date at end of day (23:59:59)
-     */
-    fun getTodayEnd(): Date {
+
+    // Lay thoi gian ket thuc cua ngay (23:59:59)
+    fun getEndOfDay(date: Date): Date {
         val calendar = Calendar.getInstance()
+        calendar.time = date
+
         calendar.set(Calendar.HOUR_OF_DAY, 23)
         calendar.set(Calendar.MINUTE, 59)
         calendar.set(Calendar.SECOND, 59)
         calendar.set(Calendar.MILLISECOND, 999)
+
         return calendar.time
     }
-    
-    /**
-     * Add days to a date
-     */
+
+    // them so ngay vao mot ngay
     fun addDays(date: Date, days: Int): Date {
         val calendar = Calendar.getInstance()
         calendar.time = date
+
         calendar.add(Calendar.DAY_OF_YEAR, days)
+        
+        // Normalize to start of day to ensure consistency
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
         return calendar.time
     }
-    
-    /**
-     * Check if two dates are on the same day
-     */
+
+    // kiem tra 2 ngay co cung mot ngay khong
     fun isSameDay(date1: Date, date2: Date): Boolean {
         val cal1 = Calendar.getInstance()
         val cal2 = Calendar.getInstance()
         cal1.time = date1
         cal2.time = date2
+
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
     }
-    
-    /**
-     * Get start of day for a given date
-     */
-    fun getStartOfDay(date: Date): Date {
+
+    // Lay mot tuan tieu chuan tu mot ngay bat ky (tu t2 - cn)
+    fun getStandardWeekFromDate(date: Date): List<Date> {
         val calendar = Calendar.getInstance()
         calendar.time = date
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        return calendar.time
+
+        // tim thu 2 cua tuan
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val daysToMonday = when (dayOfWeek) {
+            Calendar.SUNDAY -> -6
+            else -> Calendar.MONDAY - dayOfWeek
+        }
+
+        calendar.add(Calendar.DAY_OF_YEAR, daysToMonday)
+
+        val monday = getStartOfDay(calendar.time)
+
+        // tao danh sach 7 ngay tu t2 - cn co chua ngay date
+        val week = mutableListOf<Date>()
+        for (i in 0 until Constants.DAYS_IN_WEEK)
+            week.add(addDays(monday, i))
+
+        return week
     }
-    
-    /**
-     * Get end of day for a given date
-     */
-    fun getEndOfDay(date: Date): Date {
-        val calendar = Calendar.getInstance()
-        calendar.time = date
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        calendar.set(Calendar.MILLISECOND, 999)
-        return calendar.time
+
+    // lay tuan hien tai (chua ngay hien tai)
+    fun getCurrentWeek(): List<Date> {
+        return getStandardWeekFromDate(getCurrentDate())
     }
-    
-    /**
-     * Get days difference between two dates
-     */
+
+    // lay so ngay chenh lech giua hai ngay
     fun getDaysDifference(startDate: Date, endDate: Date): Int {
-        val diffInMillis = endDate.time - startDate.time
-        return (diffInMillis / (1000 * 60 * 60 * 24)).toInt()
+        val diffInMillis = getStartOfDay(endDate).time - getStartOfDay(startDate).time
+
+        return (diffInMillis / Constants.MILLIS_IN_DAY).toInt()
+    }
+
+    // kiem tra xem mot ngay co phai la ngay hien tai khong
+    fun isToday(date: Date): Boolean {
+        return isSameDay(date, getCurrentDate())
     }
 }
 

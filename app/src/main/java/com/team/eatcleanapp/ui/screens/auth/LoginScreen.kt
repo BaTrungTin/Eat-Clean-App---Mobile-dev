@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,30 +51,28 @@ import com.team.eatcleanapp.ui.theme.JungleGreen
 import com.team.eatcleanapp.ui.theme.LightGrayGreen
 import com.team.eatcleanapp.ui.theme.PearlAqua
 import com.team.eatcleanapp.ui.theme.White
+import com.team.eatcleanapp.util.Result
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String) -> Unit,
     onRegisterClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val state by viewModel.authState
+    val loginState by viewModel.loginState.collectAsState()
     val context = LocalContext.current
 
-    // Lắng nghe sự thay đổi trạng thái để hiển thị thông báo hoặc chuyển màn hình
-    LaunchedEffect(state) {
-        when (val s = state) {
-            is AuthState.LoginSuccess -> {
-                Toast.makeText(context, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
-                viewModel.resetState()
-                onLoginSuccess()
-            }
-            is AuthState.Error -> {
-                Toast.makeText(context, s.message, Toast.LENGTH_SHORT).show()
-                viewModel.resetState()
-            }
-            else -> {}
+    LaunchedEffect(loginState) {
+        if (loginState is Result.Success) {
+            val firebaseUser = (loginState as Result.Success<com.google.firebase.auth.FirebaseUser>).data
+            Toast.makeText(context, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+            viewModel.resetLoginState()
+            onLoginSuccess(firebaseUser.uid)
+        } else if (loginState is Result.Error) {
+            val errorMessage = (loginState as Result.Error).message ?: "Có lỗi xảy ra"
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            viewModel.resetLoginState()
         }
     }
 
@@ -84,11 +83,11 @@ fun LoginScreen(
             },
             onRegisterClick = onRegisterClick,
             onForgotPasswordClick = onForgotPasswordClick,
-            isLoading = state is AuthState.Loading
+            isLoading = loginState is Result.Loading
         )
-        
+
         // Hiển thị loading indicator nếu đang xử lý
-        if (state is AuthState.Loading) {
+        if (loginState is Result.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

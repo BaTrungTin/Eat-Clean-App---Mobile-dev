@@ -1,33 +1,11 @@
 package com.team.eatcleanapp.ui.screens.auth
 
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,23 +15,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.team.eatcleanapp.R
-import com.team.eatcleanapp.domain.model.ActivityLevel
-import com.team.eatcleanapp.domain.model.Gender
-import com.team.eatcleanapp.domain.model.Goal
-import com.team.eatcleanapp.domain.model.User
-import com.team.eatcleanapp.ui.theme.Black
-import com.team.eatcleanapp.ui.theme.DarkSage
-import com.team.eatcleanapp.ui.theme.EatCleanAppMobiledevTheme
-import com.team.eatcleanapp.ui.theme.FernGreen
-import com.team.eatcleanapp.ui.theme.ForestGreen
-import com.team.eatcleanapp.ui.theme.JungleGreen
-import com.team.eatcleanapp.ui.theme.LightGrayGreen
-import com.team.eatcleanapp.ui.theme.PearlAqua
-import com.team.eatcleanapp.ui.theme.White
+import com.team.eatcleanapp.util.Result
+import com.team.eatcleanapp.ui.theme.*
 
 @Composable
 fun RegisterScreen(
@@ -61,19 +27,20 @@ fun RegisterScreen(
     onLoginClick: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val state by viewModel.authState
+    val registerState by viewModel.registerState.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(state) {
-        when (val s = state) {
-            is AuthState.RegisterSuccess -> {
+    LaunchedEffect(registerState) {
+        when (registerState) {
+            is Result.Success -> {
                 Toast.makeText(context, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
-                viewModel.resetState()
+                viewModel.resetRegisterState()
                 onRegisterSuccess()
             }
-            is AuthState.Error -> {
-                Toast.makeText(context, s.message, Toast.LENGTH_SHORT).show()
-                viewModel.resetState()
+            is Result.Error -> {
+                val errorMessage = (registerState as Result.Error).message ?: "Có lỗi xảy ra"
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                viewModel.resetRegisterState()
             }
             else -> {}
         }
@@ -81,32 +48,14 @@ fun RegisterScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         RegisterContent(
-            onNextClick = { name, email, password, confirmPassword ->
-                // Tạo user object với giá trị mặc định cho các trường chưa nhập
-                // Các thông tin này có thể được cập nhật sau ở màn hình HealthCalculator
-                val newUser = User(
-                    id = "",
-                    email = email,
-                    password = password,
-                    name = name,
-                    weight = 0.0,
-                    height = 0.0,
-                    age = 0,
-                    gender = Gender.MALE,
-                    activityMinutesPerDay = 0,
-                    activityDaysPerWeek = 0,
-                    activityLevel = ActivityLevel.SEDENTARY,
-                    goal = Goal.MAINTAIN_WEIGHT,
-                    avatarUrl = null,
-                    healthMetrics = null
-                )
-                viewModel.register(newUser, confirmPassword)
+            onRegisterClick = { name, email, password, confirmPassword ->
+                viewModel.register(name, email, password, confirmPassword)
             },
             onLoginClick = onLoginClick,
-            isLoading = state is AuthState.Loading
+            isLoading = registerState is Result.Loading
         )
 
-        if (state is AuthState.Loading) {
+        if (registerState is Result.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -121,7 +70,7 @@ fun RegisterScreen(
 
 @Composable
 fun RegisterContent(
-    onNextClick: (String, String, String, String) -> Unit,
+    onRegisterClick: (String, String, String, String) -> Unit,
     onLoginClick: () -> Unit,
     isLoading: Boolean = false
 ) {
@@ -354,7 +303,7 @@ fun RegisterContent(
             contentAlignment = Alignment.BottomCenter
         ) {
             Button(
-                onClick = { onNextClick(name, email, password, confirmPassword) },
+                onClick = { onRegisterClick(name, email, password, confirmPassword) },
                 modifier = Modifier
                     .size(310.dp, 75.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PearlAqua),
@@ -400,7 +349,7 @@ fun RegisterScreenPreview()
 {
     EatCleanAppMobiledevTheme {
         RegisterContent(
-            onNextClick = { _, _, _, _ -> },
+            onRegisterClick = { _, _, _, _ -> },
             onLoginClick = {}
         )
     }
